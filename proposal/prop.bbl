@@ -8,4 +8,14 @@ H.~A. Helfgott.
 A.~Lubotzky, R.~Phillips, and Peter Sarnak.
 \newblock Ramanujan graphs, 1988.
 
+\bibitem{chervov2025cayleypyrlpathfindingreinforcement}
+A.~Chervov, A.~Soibelman, S.~Lytkin, I.~Kiselev, S.~Fironov, A.~Lukyanenko,
+  A.~Dolgorukova, A.~Ogurtsov, F.~Petrov, S.~Krymskii, M.~Evseev, L.~Grunvald,
+  D.~Gorodkov, G.~Antiufeev, G.~Verbii, V.~Zamkovoy, L.~Cheldieva, I.~Koltsov,
+  A.~Sychev, M.~Obozov, A.~Eliseev, S.~Nikolenko, N.~Narynbaev, R.~Turtayev,
+  N.~Rokotyan, S.~Kovalev, A.~Rozanov, V.~Nelin, S.~Ermilov, L.~Shishina,
+  D.~Mamayeva, A.~Korolkova, K.~Khoruzhii, and A.~Romanov.
+\newblock Cayleypy rl: Pathfinding and reinforcement learning on cayley graphs,
+  2025.
+
 \end{thebibliography}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.9.29)  25 JAN 2026 15:40
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (MiKTeX 25.4) (preloaded format=pdflatex 2025.9.29)  25 JAN 2026 15:52
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -251,24 +251,30 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 30.
 (C:\Users\benja\AppData\Local\Programs\MiKTeX\tex/latex/amsfonts\umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-(prop.bbl)
+Underfull \hbox (badness 10000) in paragraph at lines 36--39
+
+ []
+
+
 
 [1
 
-{C:/Users/benja/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] (prop.aux)
+{C:/Users/benja/AppData/Local/MiKTeX/fonts/map/pdftex/pdftex.map}] (prop.bbl)
+
+[2] (prop.aux)
  ***********
 LaTeX2e <2025-06-01>
 L3 programming layer <2025-05-26>
  ***********
  ) 
 Here is how much of TeX's memory you used:
- 4790 strings out of 468225
- 76582 string characters out of 5432973
- 478541 words of memory out of 5000000
- 33287 multiletter control sequences out of 15000+600000
+ 4793 strings out of 468225
+ 76691 string characters out of 5432973
+ 480544 words of memory out of 5000000
+ 33290 multiletter control sequences out of 15000+600000
  632220 words of font info for 62 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 57i,5n,71p,698b,217s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 57i,5n,71p,700b,217s stack positions out of 10000i,1000n,20000p,200000b,200000s
 <C:/Users/benja/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/
 cmbx12.pfb><C:/Users/benja/AppData/Local/Programs/MiKTeX/fonts/type1/public/ams
 fonts/cm/cmmi10.pfb><C:/Users/benja/AppData/Local/Programs/MiKTeX/fonts/type1/p
@@ -281,9 +287,9 @@ pData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmr7.pfb><C:/Users/b
 enja/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/cm/cmsy10.pfb><C
 :/Users/benja/AppData/Local/Programs/MiKTeX/fonts/type1/public/amsfonts/symbols
 /msbm10.pfb>
-Output written on prop.pdf (1 page, 111355 bytes).
+Output written on prop.pdf (2 pages, 119311 bytes).
 PDF statistics:
- 56 PDF objects out of 1000 (max. 8388607)
+ 59 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
