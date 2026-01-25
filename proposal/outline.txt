@@ -4,3 +4,16 @@
 -What do people already know about it?
 -What are the basic goals? (We are basically saying that we should get a bad grade if we don't make these)
 -What are the reach goals?
+
+4. Basic Goals (The "Safe" Grade)
+These goals should be deterministic and guaranteed to succeed given time.
+• Implementation of Group Arithmetic: Develop a robust Python/C++ class for SL(2, \mathbb{Z}/p\mathbb{Z}) arithmetic that handles matrix multiplication and inversion efficiently modulo p.
+• Exact Diameter Calculation (Small p): Implement a Breadth-First Search (BFS) algorithm to compute the exact Cayley graph and God's number for small primes (e.g., p = 3, 5, 7, 11, \dots up to maybe p \approx 100).
+• Data Tabulation: Create a table of pairs (p, G(p)) and plot G(p) against \log(p).
+• Linear Regression: Perform a least-squares fit on the experimental data to estimate the constant C in the relationship G(p) \approx C \log p.
+5. Reach Goals (The "PhD" Level Work)
+These goals involve the "AI-assisted" and exploratory aspects.
+• AI/RL Solver Implementation: Train a Reinforcement Learning agent (e.g., Deep Q-Network or PPO, referencing Chervov et al.) to find short paths for elements in groups with larger p (e.g., p > 500) where BFS is computationally intractable.
+• Heuristic Bound Estimation: Use the lengths found by the AI solver as an upper bound for the diameter of larger groups. While AI cannot prove the true diameter (it might miss the optimal path), it provides a "practical" diameter.
+• Distribution Analysis: Instead of just the diameter (maximum), analyze the distribution of path lengths. Does the distribution of lengths converge to a specific shape as p \to \infty?
+• Generator Sensitivity: (Optional) Briefly explore how changing the generating set changes the constant C.
