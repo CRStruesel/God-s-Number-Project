@@ -42,6 +42,7 @@ class BFSResult:
     farthest: Mat  # one element at maximal distance from the identity
     seconds: float
     dist: np.ndarray | None = field(default=None, repr=False)  # dist[idx] = ell(element idx)
+    last_layer: list[Mat] = field(default_factory=list, repr=False)  # all elements at maximal distance (capped)
 
     @property
     def diameter(self) -> int:
@@ -82,7 +83,8 @@ def bfs_reference(p: int, convention: str = "directed", gens: Sequence[Mat] | No
         layer = nxt
     if len(dist) != group_order(p):
         raise RuntimeError(f"reached {len(dist)} elements, expected {group_order(p)}: not a generating set?")
-    return BFSResult(p, convention, gens, layers, farthest, time.perf_counter() - t0)
+    last = [m for m, n in dist.items() if n == len(layers) - 1]
+    return BFSResult(p, convention, gens, layers, farthest, time.perf_counter() - t0, last_layer=last)
 
 
 def bfs(
@@ -92,12 +94,14 @@ def bfs(
     *,
     keep_dist: bool = False,
     chunk: int = 1 << 21,
+    last_layer_cap: int = 10_000,
 ) -> BFSResult:
-    """Vectorised BFS.  Returns the layer sizes (hence the diameter) and one farthest element.
+    """Vectorised BFS.  Returns the layer sizes (hence the diameter) and the farthest elements.
 
     ``keep_dist=True`` also returns the full array ``dist`` with ``dist[idx] = ell`` for every
     element, which costs ``p^3 - p`` bytes of memory.
     ``chunk`` bounds how many frontier elements are expanded at once, which bounds memory.
+    ``last_layer`` lists every element at maximal distance (at most ``last_layer_cap`` of them).
     """
     t0 = time.perf_counter()
     gens = list(gens) if gens is not None else generators(p, convention)
@@ -140,6 +144,7 @@ def bfs(
 
     if sum(layers) != N:
         raise RuntimeError(f"reached {sum(layers)} elements, expected {N}: not a generating set?")
+    last = [decode_scalar(int(i), p) for i in layer[:last_layer_cap]]  # ``layer`` is the last non-empty layer
     return BFSResult(
         p,
         convention,
@@ -148,6 +153,7 @@ def bfs(
         decode_scalar(farthest_idx, p),
         time.perf_counter() - t0,
         dist if keep_dist else None,
+        last_layer=last,
     )
 
 

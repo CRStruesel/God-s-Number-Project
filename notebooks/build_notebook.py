@@ -607,7 +607,7 @@ ax.axhline(group_order(p0), color=MUTED, lw=0.8)
 ax.text(0, group_order(p0) * 1.3, f"|SL₂(F_{p0})| = {group_order(p0):,}", color=INK2, fontsize=9)
 ax.set_yscale("log")
 style(ax, f"layer sizes for p = {p0}", "word length n", "|L_n|  (log scale)")
-ax.legend(loc="lower right")
+ax.legend(loc="upper left")
 plt.tight_layout()
 """)
 
@@ -663,12 +663,18 @@ elements are very structured, as the next section shows.
 md(r"""
 ## 10. Results IV — which elements are farthest, and the spectrum
 
-### 10.1 The farthest elements are powers of $T$ (and their relatives)
+### 10.1 The farthest elements are mostly powers of $T$ (and their relatives)
 
-The BFS records one element of the last layer. Classifying these across all primes:
+The BFS records the whole last layer — every element at distance $G(p)$. The cell below sorts these elements
+into a few visible types: $T^k$, $-T^k$, diagonal matrices $\mathrm{diag}(x, x^{-1})$, $\pm T^k S$ (which has the
+shape $\begin{pmatrix} k & \mp 1\\ \pm 1 & 0\end{pmatrix}$), $\pm S T^k$, and "other". Two questions are answered
+per prime: does the last layer contain some $\pm T^k$ (so that $G(p) = \max_k \ell(\pm T^k)$), and does it consist
+only of the listed types?
 """)
 
 code(r"""
+from collections import Counter
+
 def classify(m, p):
     a, b, c, d = m
     if a == 1 and d == 1 and c == 0: return "T^k"
@@ -678,10 +684,30 @@ def classify(m, p):
     if a == 0 and (b * c) % p == p - 1: return "±S T^k"
     return "other"
 
-cls = pd.DataFrame({conv: pd.Series([classify(DATA[conv][p]["farthest"], p) for p in primes]).value_counts()
-                    for conv in ["directed", "undirected"]}).fillna(0).astype(int)
-print(f"type of the recorded farthest element, over {len(primes)} primes:")
-cls
+def last_layer(conv, p):
+    r = DATA[conv][p]
+    return [tuple(m) for m in r.get("last_layer") or [r["farthest"]]]
+
+per_prime = []
+for p in primes:
+    for conv in ["directed", "undirected"]:
+        types = [classify(m, p) for m in last_layer(conv, p)]
+        per_prime.append({"p": p, "conv": conv, "n_far": len(types),
+                          "contains ±T^k": any(t in ("T^k", "-T^k") for t in types),
+                          "only listed types": all(t != "other" for t in types)})
+per_prime = pd.DataFrame(per_prime)
+summary = per_prime.groupby("conv").agg(primes=("p", "size"),
+                                         last_layer_contains_some_T_power=("contains ±T^k", "sum"),
+                                         last_layer_has_only_listed_types=("only listed types", "sum"))
+print(summary.to_string())
+print()
+for conv in ["directed", "undirected"]:
+    miss = per_prime[(per_prime["conv"] == conv) & ~per_prime["contains ±T^k"]]["p"].tolist()
+    print(f"{conv}: primes whose last layer contains no ±T^k: {miss}")
+print()
+print("type counts over all elements at maximal distance, all primes:")
+pd.DataFrame({conv: Counter(classify(m, p) for p in primes for m in last_layer(conv, p))
+              for conv in ["directed", "undirected"]}).fillna(0).astype(int)
 """)
 
 code(r"""
@@ -709,10 +735,13 @@ The picture of $\ell(T^k)$ is the continued-fraction picture of the problem: $T^
 integer matrix $\equiv T^k \pmod p$, i.e. by any $\begin{pmatrix} 1 + px & k + py\\ pz & 1 + pw\end{pmatrix}$ of
 determinant one, and a short word for such a lift corresponds to a short continued-fraction expansion of the
 ratio of its entries. Small $k$ and $k$ close to $p$ are cheap ($\ell \le k$ or $\le p - k$ trivially in the
-undirected case); the hard $k$ are those for which *every* lift has a long expansion. Larsen's "Navigating the
-Cayley graph of $\mathrm{SL}_2(\mathbb{F}_p)$" (IMRN 2003) gives, as far as I recall, an explicit construction of words of
-length $O(\log p \log\log p)$ for every element along these lines; whether the maximum of $\ell$ is always attained
-at a power of $T$, or a conjugate/negative of one, is open (Section 11).
+undirected case); the hard $k$ are those for which *every* lift has a long expansion. In the undirected
+convention the curve is symmetric, $\ell(T^k) = \ell(T^{-k})$, because conjugation by $\mathrm{diag}(1,-1)$ is an
+automorphism of $\mathrm{SL}_2(\mathbb{F}_p)$ that swaps $T \leftrightarrow T^{-1}$ and $S \leftrightarrow S^{-1}$ and so
+preserves the undirected generating set; in the directed convention no such symmetry exists and the curve is
+lopsided. Larsen's "Navigating the Cayley graph of $\mathrm{SL}_2(\mathbb{F}_p)$" (IMRN 2003) gives, as far as I recall,
+an explicit construction of words of length $O(\log p \log\log p)$ for every element along these lines; whether the
+maximum of $\ell$ is always attained at a power of $T$, or a negative/conjugate of one, is open (Section 11).
 
 ### 10.2 The spectrum: expander, not Ramanujan
 
@@ -742,7 +771,7 @@ spec[["N", "lambda2", "lambda_min", "is_ramanujan", "chung_bound", "G_und (exact
 
 md(r"""
 Reading the table: only $p = 3$ (a graph on 24 vertices) is Ramanujan; from $p = 5$ on, $\lambda_2 > 2\sqrt 3$,
-and $\lambda_2$ creeps upward with $p$. Selberg's theorem guarantees $\sup_p \lambda_2 < 4$ — this is the expander
+and $\lambda_2$ drifts upward with $p$ (not monotonically). Selberg's theorem guarantees $\sup_p \lambda_2 < 4$ — this is the expander
 property — but the gap $4 - \lambda_2$ is evidently small, which is exactly why spectral diameter bounds such as
 Chung's are useless here (hundreds, against true values around 30). The diameter of these graphs is governed by
 the fine structure of §8–§10.1, not by the spectral gap alone.
@@ -774,7 +803,11 @@ md(r"""
    §10.1 suggests testing $\ell(T^k)$ only.
 3. **Distribution of lengths.** Partly done (§9); the right normalisation is $n - \text{mean}$, and the bulk width
    appears to stay bounded while the tail grows.
-4. **Generator sensitivity.** Started below: the same computation with $\{T, U\}$ and $\{S, ST\}$ in place of $\{S, T\}$.
+4. **Generator sensitivity.** Started below: the same computation with $\{T, U\}$ and $\{S, ST\}$ in place of
+   $\{S, T\}$. The table shows that "the constant" is very much a property of the generating set: with the two
+   unipotent generators $T, U$ the diameters are roughly a third smaller than with $S, T$ (every letter then
+   changes the matrix, whereas $S$ only rearranges entries), and with $S, ST$ — the generators of orders $4$ and
+   $6$ that exhibit $\mathrm{PSL}_2(\mathbb{Z})$ as $\mathbb{Z}/2 * \mathbb{Z}/3$ — they are roughly a third larger.
 """)
 
 code(r"""
@@ -817,9 +850,10 @@ md(r"""
 2. **Does $\lim_{p\to\infty} G(p)/\ln p$ exist?** The data of §7 are consistent with a limit but cannot establish
    one; even $\limsup$ vs $\liminf$ along subsequences of primes is unknown. Related: is $G(p) - n_{\mathrm{growth}}(p)$
    bounded by a constant times $\ln p$ with a small constant, or by something smaller (e.g. $\ln\ln p$)?
-3. **Is the maximum always attained on $\{\pm T^k\} \cup \{\pm T^k S\} \cup \{\text{diagonal}\}$?** In the data the
-   recorded farthest element is almost always of one of these forms (§10.1). A proof would reduce $G(p)$ to a
-   one-parameter problem: $G(p) = \max_k \ell(T^k)$ or a close relative.
+3. **Is the maximum always attained at some $\pm T^k$?** §10.1 counts, for each convention, the primes whose
+   last layer contains a power of $T$ or its negative; for most primes it does, and for all primes the last layer
+   is dominated by $\pm T^k$, diagonal matrices and $\pm T^k S$. A proof that $G(p) = \max_k \ell(\pm T^k)$ would
+   reduce God's number to a one-parameter problem.
 4. **An exact formula for $\ell(T^k)$ in terms of continued fractions of lifts.** This would make $G(p)$
    computable for primes far beyond the reach of any BFS, by number theory instead of search.
 5. **Sharper spectral statements.** Does $\lambda_2(p)$ converge, and to what? How does $4 - \lambda_2(p)$ compare with

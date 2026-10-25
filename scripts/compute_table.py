@@ -8,7 +8,9 @@ Example
 Each output line is a JSON object::
 
     {"p": 101, "convention": "directed", "diameter": 41, "layer_sizes": [1, 2, 4, ...],
-     "farthest": [1, 81, 0, 1], "seconds": 0.23}
+     "farthest": [1, 81, 0, 1], "last_layer": [[1, 81, 0, 1]], "seconds": 0.23}
+
+(``last_layer`` lists every element at maximal distance, ``farthest`` is its first entry.)
 
 Primes already present in the output file are skipped, so the script can be re-run to
 extend a table.  Run it from the repository root (or put the repository on PYTHONPATH).
@@ -66,6 +68,7 @@ def main() -> None:
                 "diameter": r.diameter,
                 "layer_sizes": r.layer_sizes,
                 "farthest": list(r.farthest),
+                "last_layer": [list(m) for m in r.last_layer],
                 "seconds": round(r.seconds, 3),
             }
             f.write(json.dumps(rec) + "\n")

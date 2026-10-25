@@ -82,8 +82,11 @@ def test_fast_bfs_matches_reference(p, convention):
     # the stored distance array must agree with the layer sizes
     counts = np.bincount(fast.dist.astype(np.int64), minlength=fast.diameter + 1)
     assert counts.tolist() == fast.layer_sizes
-    # and the reported farthest element really sits in the last layer
+    # and the reported farthest elements really are the whole last layer
     assert fast.dist[encode_scalar(fast.farthest, p)] == fast.diameter
+    assert len(fast.last_layer) == fast.layer_sizes[-1] == len(ref.last_layer)
+    assert sorted(fast.last_layer) == sorted(ref.last_layer)
+    assert all(fast.dist[encode_scalar(m, p)] == fast.diameter for m in fast.last_layer)
 
 
 def test_known_small_values():

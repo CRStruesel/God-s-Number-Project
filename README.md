@@ -20,7 +20,7 @@ generated and executed by `notebooks/build_notebook.py`, so its outputs are repr
 * The small layers of the Cayley graph are those of SL₂(ℤ) and satisfy exact recurrences
   (undirected: 4·F_{n+2}, golden-ratio growth; directed: L_n = L_{n−1} + L_{n−3}), which give a lower bound
   that explains most of G(p).
-* The farthest elements are (almost always) powers of T or close relatives.
+* The farthest elements are mostly powers of T or close relatives (their negatives, diagonal matrices, T^k·S).
 * The graphs are expanders but, for p ≥ 5, **not** Ramanujan (λ₂ > 2√3), contrary to the proposal's wording.
 
 ## Layout
