@@ -1089,9 +1089,39 @@ and 1 GB per run. File formats: one JSON object per line with keys `p, conventio
 farthest, seconds`; the spectrum file is a CSV with a header.
 """)
 
+md(r"""
+## Summary in numbers
+
+Every figure below is computed from the data loaded above, so this list is a faithful digest of the notebook.
+""")
+
 code(r"""
-print("executed on", time.strftime("%Y-%m-%d %H:%M"), "with numpy", np.__version__, "| primes in the tables:", len(primes),
-      "| largest p:", primes[-1])
+def G(conv, p): return DATA[conv][p]["diameter"]
+show_p = [p for p in (101, 211, 499, 1009) if p in DATA["directed"] and p in DATA["undirected"]]
+print(f"Exact God's numbers: {len(primes)} primes, 2 <= p <= {primes[-1]}, both conventions.")
+for p in show_p:
+    print(f"   p = {p:5d}:  |G| = {group_order(p):>13,}   directed G = {G('directed', p):3d}   undirected G = {G('undirected', p):3d}")
+print()
+for conv, tag in [("directed", "dir"), ("undirected", "und")]:
+    s, i, se = fits[(conv, "p >= 100")]
+    print(f"Least squares ({conv:10s}, p >= 100):  G(p) ≈ {s:.2f} ln p {i:+.2f}   (slope s.e. {se:.2f})")
+print(f"Lower-bound slopes: counting 3/ln2 = {3/math.log(2):.2f} (dir), 3/ln3 = {3/math.log(3):.2f} (und);"
+      f"  SL_2(Z) growth 3/ln psi = {3/math.log(psi):.2f} (dir), 3/ln phi = {3/math.log(phi):.2f} (und)")
+print(f"Share of G(p) explained by the SL_2(Z)-growth bound at p = {primes[-1]}: "
+      f"{table.loc[primes[-1], 'growth_lb_dir'] / G('directed', primes[-1]):.0%} (dir), "
+      f"{table.loc[primes[-1], 'growth_lb_und'] / G('undirected', primes[-1]):.0%} (und)")
+print()
+sd_dir = stats.xs("directed", level="conv")["sd"]; sd_und = stats.xs("undirected", level="conv")["sd"]
+print(f"Spread of the length distribution for p >= 61: sd ≈ {sd_dir[sd_dir.index >= 61].mean():.2f} (dir), {sd_und[sd_und.index >= 61].mean():.2f} (und)")
+print(f"Primes for which some ±T^k is a farthest element: "
+      f"{int(summary.loc['directed', 'last_layer_contains_some_T_power'])}/{len(primes)} (dir), "
+      f"{int(summary.loc['undirected', 'last_layer_contains_some_T_power'])}/{len(primes)} (und)")
+print()
+print(f"Spectral radius of Cay(SL_2(Z), S^±1, T^±1): rigorously >= {c_sl2z[NMAX] ** (1/(2*NMAX)):.3f} > 2*sqrt3 = {2*math.sqrt(3):.3f}; extrapolated ≈ {rho_hat:.3f}")
+print(f"lambda_2 of the finite graphs, 37 <= p <= {big.index.max()}: {big['lambda2'].min():.3f} .. {big['lambda2'].max():.3f}  (not Ramanujan; at the infinite graph's spectral radius)")
+print(f"LPS (q = 5) Ramanujan generators: G/log_5 N ranges {lps_table['G / log_5 N'].min():.2f} .. {lps_table['G / log_5 N'].max():.2f}  (Sardari lower bound 4/3; LPS upper bound 2)")
+print()
+print("executed on", time.strftime("%Y-%m-%d %H:%M"), "with numpy", np.__version__)
 """)
 
 
