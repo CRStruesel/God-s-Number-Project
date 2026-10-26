@@ -1083,8 +1083,9 @@ $\pi(S^{-1}) = -\pi(S)$, so $\pi(S) + \pi(S)^{-1} = 0$ and the adjacency operato
 whose eigenvalues are $2\cos(2\pi j/p)$. On the whole of $\ell^2(G)$: the subgroup $\{\pm I\} \times \langle T\rangle
 \cong \mathbb{Z}/2p$ acts freely by right multiplication, so each of its $2p$ characters occurs $(p^3-p)/2p = (p^2-1)/2$
 times, and the odd functions with $T$-eigenvalue $e^{2\pi i j/p}$ are $A$-eigenvectors with eigenvalue $2\cos(2\pi j/p)$.
-**Hence every value $2\cos(2\pi j/p)$, $j = 0, \dots, p-1$, is an eigenvalue of $X_p$ of multiplicity at least
-$(p^2-1)/2$, and these account for exactly half of all eigenvalues.** (Odd representations: the principal series with
+**Hence every value $2\cos(2\pi j/p)$ is an eigenvalue of $X_p$ of multiplicity at least $(p^2-1)/2$ for $j = 0$
+and at least $p^2 - 1$ for $j \ne 0$ (the characters $j$ and $p-j$ give the same cosine), and these account for
+exactly half of all eigenvalues.** (Odd representations: the principal series with
 $\chi(-1) = -1$ and the discrete series with $\theta(-1) = -1$.) The density plot shows this comb, with the arcsine
 singularities of $2\cos$ at $\pm 2$ producing the two spikes. All the interesting spectrum — $\lambda_2$ included — lives
 in the **even** representations, where $A = 2\pi(S) + \pi(T) + \pi(T)^{-1}$ with $\pi(S)$ an involution.

@@ -259,7 +259,8 @@ O(p⁴) operations instead of a p³-vertex eigenproblem, and one learns which re
 ## Proposition 7b (half of the spectrum is explicit)
 
 For every j = 0, …, p−1 the number 2cos(2πj/p) is an eigenvalue of X_p with multiplicity at least
-(p²−1)/2. These eigenvalues (with these multiplicities) are exactly half of the spectrum, and the
+(p²−1)/2, and at least p²−1 when j ≠ 0 (j and p−j give the same cosine). These eigenvalues (with
+these multiplicities) are exactly half of the spectrum, and the
 other half is the spectrum of 2π(S) + π(T) + π(T)⁻¹ over the *even* irreducible representations
 π (those with π(−I) = 1), each counted dim(π) times.
 

@@ -65,3 +65,13 @@ p,N,lambda2,lambda2_block,lambda_min,lambda_min_block,seconds
 317,31854696,3.93105211,principal series chi_100,-3.92990585,discrete series theta_10,40.3
 331,36264360,3.92824444,discrete series theta_52,-3.93086111,discrete series theta_66,57.7
 337,38272416,3.93296297,Ind(quadratic) = two reps of dim (p+1)/2,-3.92852175,discrete series theta_56,49.8
+347,41781576,3.92446276,principal series chi_146,-3.92567227,principal series chi_58,69.3
+349,42508200,3.93040791,principal series chi_62,-3.92986888,Ind(quadratic) = two reps of dim (p+1)/2,61.1
+353,43986624,3.92667868,principal series chi_96,-3.92637445,principal series chi_142,69.5
+359,46267920,3.93017201,principal series chi_72,-3.93215321,principal series chi_98,62.7
+367,49430496,3.92694653,principal series chi_84,-3.92647282,discrete series theta_144,87.3
+373,51894744,3.92659308,principal series chi_104,-3.93207447,Ind(quadratic) = two reps of dim (p+1)/2,80.0
+379,54439560,3.92549594,principal series chi_158,-3.92441407,principal series chi_150,97.6
+383,56181504,3.92685358,principal series chi_154,-3.92951289,principal series chi_118,84.6
+389,58863480,3.93136915,principal series chi_154,-3.92635356,principal series chi_70,102.0
+397,62570376,3.92553249,principal series chi_122,-3.93209784,Ind(quadratic) = two reps of dim (p+1)/2,98.8
