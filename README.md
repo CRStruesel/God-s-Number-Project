@@ -20,7 +20,13 @@ generated and executed by `notebooks/build_notebook.py`, so its outputs are repr
 * The small layers of the Cayley graph are those of SL₂(ℤ) and satisfy exact recurrences
   (undirected: 4·F_{n+2}, golden-ratio growth; directed: L_n = L_{n−1} + L_{n−3}), which give a lower bound
   that explains most of G(p).
-* The farthest elements are mostly powers of T or close relatives (their negatives, diagonal matrices, T^k·S).
+* A power of T is among the farthest elements for most primes (about three quarters of them in the
+  directed convention, a smaller majority in the undirected one); the other maximisers are structured
+  (diagonal matrices, Tᵏ·S, powers of U, conjugates of S) but not yet understood.
+* The second eigenvalue of the finite graphs sits at the spectral radius of the infinite Cayley graph of
+  SL₂(ℤ) (≈ 3.93): no "exceptional eigenvalues" are visible — a graph analogue of Selberg's conjecture.
+* With Lubotzky–Phillips–Sarnak (Ramanujan) generators instead of S, T, God's number is ≈ (4/3)·log_q N,
+  matching Sardari's bound; the notebook's §12 explains how modular forms enter.
 * The graphs are expanders but, for p ≥ 5, **not** Ramanujan (λ₂ > 2√3), contrary to the proposal's wording.
 
 ## Layout
@@ -28,7 +34,7 @@ generated and executed by `notebooks/build_notebook.py`, so its outputs are repr
 | path | contents |
 |---|---|
 | `proposal/` | the original LaTeX proposal (January 2026) |
-| `godsnumber/` | the Python package: arithmetic, element indexing, vectorised BFS, SL₂(ℤ) growth, spectra |
+| `godsnumber/` | the Python package: arithmetic, element indexing, vectorised BFS, SL₂(ℤ) growth, spectra, LPS generators |
 | `scripts/` | batch computations that fill `data/` |
 | `data/` | `layers_directed.jsonl`, `layers_undirected.jsonl` (one JSON object per prime), `spectrum.csv` |
 | `tests/` | pytest suite (`python -m pytest tests`) |

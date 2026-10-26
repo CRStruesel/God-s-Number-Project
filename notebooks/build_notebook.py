@@ -663,13 +663,15 @@ elements are very structured, as the next section shows.
 md(r"""
 ## 10. Results IV — which elements are farthest, and the spectrum
 
-### 10.1 The farthest elements are mostly powers of $T$ (and their relatives)
+### 10.1 Which elements are farthest?
 
 The BFS records the whole last layer — every element at distance $G(p)$. The cell below sorts these elements
-into a few visible types: $T^k$, $-T^k$, diagonal matrices $\mathrm{diag}(x, x^{-1})$, $\pm T^k S$ (which has the
-shape $\begin{pmatrix} k & \mp 1\\ \pm 1 & 0\end{pmatrix}$), $\pm S T^k$, and "other". Two questions are answered
-per prime: does the last layer contain some $\pm T^k$ (so that $G(p) = \max_k \ell(\pm T^k)$), and does it consist
-only of the listed types?
+into visible one-parameter families: $\pm T^k$; $\pm U^k$ (lower unipotent); diagonal $\mathrm{diag}(x, x^{-1})$;
+the "continued-fraction" shapes $\pm T^k S = \pm\begin{pmatrix} k & -1\\ 1 & 0\end{pmatrix}$, $\pm S T^k$,
+$\pm T^a S T^b = \pm\begin{pmatrix} a & ab-1\\ 1 & b\end{pmatrix}$ and their transposes; and "other". Two questions
+are answered per prime: does the last layer contain some $\pm T^k$ (so that $G(p) = \max_k \ell(\pm T^k)$), and does
+it consist only of the listed families? For the "other" class the cell also reports two structural statistics:
+how many have trace $0$ (i.e. are conjugates of $S$, elements of order $4$) and how many have $a = d$.
 """)
 
 code(r"""
@@ -677,11 +679,15 @@ from collections import Counter
 
 def classify(m, p):
     a, b, c, d = m
-    if a == 1 and d == 1 and c == 0: return "T^k"
-    if a == p - 1 and d == p - 1 and c == 0: return "-T^k"
+    if c == 0 and a == 1 and d == 1: return "T^k"
+    if c == 0 and a == p - 1 and d == p - 1: return "-T^k"
+    if b == 0 and a == 1 and d == 1: return "U^k"
+    if b == 0 and a == p - 1 and d == p - 1: return "-U^k"
     if b == 0 and c == 0: return "diagonal diag(x, 1/x)"
-    if d == 0 and (b * c) % p == p - 1: return "±T^k S  (= [[k, ∓1], [±1, 0]])"
+    if d == 0 and (b * c) % p == p - 1: return "±T^k S"
     if a == 0 and (b * c) % p == p - 1: return "±S T^k"
+    if c in (1, p - 1): return "±T^a S T^b  (c = ±1)"
+    if b in (1, p - 1): return "±U^a S^-1 U^b  (b = ±1)"
     return "other"
 
 def last_layer(conv, p):
@@ -703,11 +709,27 @@ print(summary.to_string())
 print()
 for conv in ["directed", "undirected"]:
     miss = per_prime[(per_prime["conv"] == conv) & ~per_prime["contains ±T^k"]]["p"].tolist()
-    print(f"{conv}: primes whose last layer contains no ±T^k: {miss}")
+    print(f"{conv}: primes whose last layer contains no ±T^k ({len(miss)} of {len(primes)}): {miss}")
+print()
+for conv in ["directed", "undirected"]:
+    others = [(p, m) for p in primes for m in last_layer(conv, p) if classify(m, p) == "other"]
+    tr0 = sum(1 for p, (a, b, c, d) in others if (a + d) % p == 0)
+    ad = sum(1 for p, (a, b, c, d) in others if a == d)
+    print(f"{conv}: {len(others)} 'other' maximisers, of which {tr0} have trace 0 (conjugates of S) and {ad} have a = d")
 print()
 print("type counts over all elements at maximal distance, all primes:")
 pd.DataFrame({conv: Counter(classify(m, p) for p in primes for m in last_layer(conv, p))
               for conv in ["directed", "undirected"]}).fillna(0).astype(int)
+""")
+
+md(r"""
+So a power of $T$ attains the maximum for most primes in the directed convention and for a smaller majority
+in the undirected one, but by no means always; the remaining maximisers are structured — diagonal matrices,
+the continued-fraction shapes, powers of $U$, and a sizeable class of trace-zero elements (conjugates of $S$)
+and of elements with equal diagonal entries — without a single description that covers them. Finding one is
+open question 3 in §11.3. Note also that the undirected last layer is closed under $\gamma \mapsto \gamma^{-1}$ and
+under conjugation by $\mathrm{diag}(1,-1)$ (both preserve $\ell$), which is why its elements come in groups of
+two or four.
 """)
 
 code(r"""
@@ -936,10 +958,11 @@ md(r"""
 2. **Does $\lim_{p\to\infty} G(p)/\ln p$ exist?** The data of §7 are consistent with a limit but cannot establish
    one; even $\limsup$ vs $\liminf$ along subsequences of primes is unknown. Related: is $G(p) - n_{\mathrm{growth}}(p)$
    bounded by a constant times $\ln p$ with a small constant, or by something smaller (e.g. $\ln\ln p$)?
-3. **Is the maximum always attained at some $\pm T^k$?** §10.1 counts, for each convention, the primes whose
-   last layer contains a power of $T$ or its negative; for most primes it does, and for all primes the last layer
-   is dominated by $\pm T^k$, diagonal matrices and $\pm T^k S$. A proof that $G(p) = \max_k \ell(\pm T^k)$ would
-   reduce God's number to a one-parameter problem.
+3. **Describe the set of farthest elements.** §10.1 shows that $\pm T^k$ attains the maximum for most primes
+   but not all, and that the other maximisers fall into a few one-parameter families (diagonal, $\pm T^k S$,
+   $\pm U^k$, …) plus a residue rich in trace-zero elements. Is $G(p)$ always the maximum of $\ell$ over a fixed
+   finite list of one-parameter families — $T^k$, $U^k$, $\mathrm{diag}(x, x^{-1})$, $T^k S$, and conjugates of $S$
+   by short words? If so, God's number reduces to a few one-parameter problems, each a continued-fraction question.
 4. **An exact formula for $\ell(T^k)$ in terms of continued fractions of lifts.** This would make $G(p)$
    computable for primes far beyond the reach of any BFS, by number theory instead of search.
 5. **Sharper spectral statements.** Does $\lambda_2(p)$ converge, and to what? How does $4 - \lambda_2(p)$ compare with
