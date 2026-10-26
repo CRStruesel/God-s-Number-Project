@@ -604,7 +604,8 @@ for conv in ["directed", "undirected"]:
     Z = layers_extended(len(L) - 1, conv)
     ax.plot(range(len(Z)), Z, "--", color=PAL[conv], alpha=0.55, label=f"|L_n| in SL₂(ℤ), {conv}", lw=1.2)
 ax.axhline(group_order(p0), color=MUTED, lw=0.8)
-ax.text(0, group_order(p0) * 1.3, f"|SL₂(F_{p0})| = {group_order(p0):,}", color=INK2, fontsize=9)
+ax.text(len(DATA["directed"][p0]["layer_sizes"]) - 1, group_order(p0) * 1.3, f"|SL₂(F_{p0})| = {group_order(p0):,}",
+        color=INK2, fontsize=9, ha="right")
 ax.set_yscale("log")
 style(ax, f"layer sizes for p = {p0}", "word length n", "|L_n|  (log scale)")
 ax.legend(loc="upper left")
@@ -1037,8 +1038,9 @@ lps_table
 """)
 
 md(r"""
-The ratio $G/\log_5 N$ hovers at about $1.35$–$1.45$ for these sizes, consistent with Sardari's $\tfrac43 + o(1)$
-and far below the Ramanujan upper bound $2$. For comparison, with $S, T$ and the same group the (undirected)
+The ratio $G/\log_5 N$ lies between about $1.25$ and $1.5$ for these sizes (mostly $1.35$–$1.45$; the integer
+rounding of $G$ alone moves it by $\pm 0.07$ here), consistent with Sardari's $\tfrac43 + o(1)$ and far below the
+Ramanujan upper bound $2$. For comparison, with $S, T$ and the same group the (undirected)
 God's number is about $2.5\,\log_3 N$ — three times the trivial counting bound and about twice as inefficient as
 the Ramanujan set after adjusting for the degree. Two remarks:
 
