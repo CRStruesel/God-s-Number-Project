@@ -60,3 +60,8 @@ p,N,lambda2,lambda2_block,lambda_min,lambda_min_block,seconds
 283,22664904,3.92721734,principal series chi_84,-3.92711038,principal series chi_24,36.6
 293,25153464,3.92522298,principal series chi_144,-3.92401148,discrete series theta_142,33.0
 307,28934136,3.93359512,discrete series theta_60,-3.92865714,principal series chi_132,42.5
+311,30079920,3.92707139,discrete series theta_148,-3.92782485,principal series chi_38,37.7
+313,30663984,3.93062565,discrete series theta_118,-3.92919802,principal series chi_6,54.0
+317,31854696,3.93105211,principal series chi_100,-3.92990585,discrete series theta_10,40.3
+331,36264360,3.92824444,discrete series theta_52,-3.93086111,discrete series theta_66,57.7
+337,38272416,3.93296297,Ind(quadratic) = two reps of dim (p+1)/2,-3.92852175,discrete series theta_56,49.8
