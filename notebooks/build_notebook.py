@@ -132,8 +132,13 @@ Combinatorica 8 (1988); Chervov et al., *CayleyPy RL*, arXiv:2502.18663 (2025).
 **Status after this notebook.** All four basic goals are done, and well beyond the proposed range:
 exact diameters are tabulated for every prime up to 500 and for a few primes near 1000, in both of
 the two possible conventions (Section 3 explains why there are two). Reach goal (3) is partly done
-(Section 8), reach goal (4) is started (Section 11), and reach goals (1)–(2) are re-assessed in
+(Section 9), reach goal (4) is started (Section 11), and reach goals (1)–(2) are re-assessed in
 Section 11: BFS is *not* intractable at $p > 500$, and a solver's lengths do not bound the diameter.
+Beyond the proposal, the project now has **theorems** (collected with proofs in `docs/theorems.md`): the exact
+growth of $\mathrm{SL}_2(\mathbb{Z})$ in these generators (§8.4), the resulting lower bounds for God's number, and the
+fact that the Cayley graphs are not Ramanujan (§10.3); the whole spectrum of the graphs via the
+representation theory of $\mathrm{SL}_2(\mathbb{F}_p)$ (§10.4); and the comparison with a Ramanujan generating set
+built from modular forms (§12).
 """)
 
 # ----------------------------------------------------------------------------------------
@@ -612,6 +617,80 @@ ax.legend(loc="upper left")
 plt.tight_layout()
 """)
 
+md(r"""
+### 8.4 The recurrences are theorems (computer-assisted proof)
+
+The two recurrences of §8.2 are now proved; the full argument is in `docs/theorems.md` (Theorem 1), and
+this cell re-runs its finite checks. The idea, in four steps:
+
+1. **Normal forms.** $\mathrm{SL}_2(\mathbb{Z})$ is the free product of $\langle S\rangle \cong \mathbb{Z}/4$ and
+   $\langle R\rangle \cong \mathbb{Z}/6$, $R = ST$, amalgamated over the centre $\{\pm I\}$. So every element is
+   uniquely $\pm\, c_1 c_2 \cdots c_m$ with syllables alternating between $S$ and $R^{\pm1}$, and right
+   multiplication by a generator changes at most the last two syllables.
+2. **An explicit word.** Lift $S \mapsto S$, $R \mapsto ST$, $R^{-1} \mapsto T^{-1}S^{-1}$, delete adjacent pairs of
+   $S$-letters (each is $\pm I$), fix the sign by flipping one $S \leftrightarrow S^{-1}$ (free, except for the pure
+   powers $\pm T^k$, where $-T^k$ costs two more). Its length $L(g)$ satisfies $\ell(g) \le L(g)$.
+3. **A Lipschitz inequality.** $L(gx) \le L(g) + 1$ for all $g$ and generators $x$. Because $L$ is a sum of costs
+   of windows of three syllables and $x$ touches only the last two, this is a *finite* check over syllable tails
+   (plus the family $\pm T^k$ by hand). It implies $L(g) \le \ell(g)$, hence $\ell = L$.
+4. **Counting.** Elements with $L = n$ are counted by a transfer matrix over (last two syllables); solving it
+   symbolically gives the generating functions below. The directed case is the same with lifts $R^{-1} \mapsto S^3TST$,
+   $S^2 = -I$ deleted from the $S$-runs, and the parity of deletions carried along.
+""")
+
+code(r"""
+import sympy as sp
+from godsnumber.normal_forms import (verify_lipschitz, verify_lipschitz_directed, verify_pure_family,
+                                     sphere_sizes_from_formula, directed_sphere_sizes_from_formula,
+                                     normal_forms_in_ball, length_formula, directed_length_formula, local_cost,
+                                     directed_local_cost, all_syllable_strings)
+print("undirected Lipschitz check :", verify_lipschitz(8))
+print("pure family ±T^k           :", verify_pure_family(14))
+print("directed Lipschitz check   :", verify_lipschitz_directed(8))
+nf = normal_forms_in_ball(8)
+print()
+print("examples (matrix -> normal form -> geodesic word, length):")
+for m in [(1, 5, 0, 1), (-1, 0, 0, -1), (0, -1, 1, 1), (2, 3, 1, 2), (3, -1, 1, 0)]:
+    sg, sy = nf[m]
+    L, w = length_formula(sg, sy); Ld, wd = directed_length_formula(sg, sy)
+    print(f"   {str(m):18s} {'+' if sg > 0 else '-'}{sy:10s}  undirected: {w:12s} ({L})   directed: {wd:14s} ({Ld})")
+
+x = sp.symbols('x')
+def transfer_gf(states, cost, start):
+    idx = {s: i for i, s in enumerate(states)}; M = sp.zeros(len(states), len(states))
+    for s in states:
+        last = s[0][-1] if s[0] else None
+        nxt = ['S', 'R', 'r'] if last is None else (['R', 'r'] if last == 'S' else ['S'])
+        for c in nxt:
+            t, delta = cost(s, c)
+            M[idx[s], idx[t]] += x ** delta
+    v0 = sp.zeros(1, len(states)); v0[0, idx[start]] = 1
+    return sp.factor(sp.simplify((v0 * (sp.eye(len(states)) - M).inv() * sp.ones(len(states), 1))[0, 0]))
+base = ['', 'S', 'R', 'r', 'SR', 'Sr', 'RS', 'rS']
+G0 = transfer_gf([(s,) for s in base], lambda s, c: (((s[0] + c)[-2:],), local_cost(s[0] + c) - local_cost(s[0])), ('',))
+P = 1 + 2 * x / (1 - x)
+und_gf = sp.factor(sp.simplify(2 * G0 - P + x**2 * P))
+def dcost(s, c):
+    L0a, pa = directed_local_cost(s[0]); L0b, pb = directed_local_cost(s[0] + c)
+    return ((s[0] + c)[-2:], (s[1] + pb - pa) % 2), L0b - L0a
+Gd = transfer_gf([(s, par) for s in base for par in (0, 1)], dcost, ('', 0))
+dir_gf = sp.factor(sp.simplify(Gd * (1 + x**2)))
+print()
+print("generating function of |L_n|, undirected:", und_gf)
+print("generating function of |L_n|, directed  :", dir_gf)
+print("coefficients:", [sp.series(und_gf, x, 0, 10).removeO().coeff(x, n) for n in range(10)],
+      [sp.series(dir_gf, x, 0, 10).removeO().coeff(x, n) for n in range(10)])
+""")
+
+md(r"""
+$$\sum_n |L_n|\,x^n = \frac{(1+x)(1+2x+4x^2+x^3)}{1-x-x^2}\quad\text{(undirected)},\qquad
+\sum_n |L^{\mathrm{dir}}_n|\,x^n = \frac{(1+x)(1+x^2)(1-x+x^2)(1+x+x^2)}{1-x-x^3}\quad\text{(directed)}.$$
+
+The denominators are the recurrences; the numerators are the small-$n$ exceptions. With Theorem 1 in hand,
+the lower bounds of §8.2 — $G(p) \ge 3\log_\varphi p - O(1)$ and $G_{\mathrm{dir}}(p) \ge 3\log_\psi p - O(1)$ —
+are theorems too (Corollary 2 in `docs/theorems.md`).
+""")
+
 # ----------------------------------------------------------------------------------------
 md(r"""
 ## 9. Results III — the distribution of word lengths (reach goal 3)
@@ -731,6 +810,34 @@ and of elements with equal diagonal entries — without a single description tha
 open question 3 in §11.3. Note also that the undirected last layer is closed under $\gamma \mapsto \gamma^{-1}$ and
 under conjugation by $\mathrm{diag}(1,-1)$ (both preserve $\ell$), which is why its elements come in groups of
 two or four.
+
+**A natural guess, tested and rejected.** One might think the farthest elements are the "$T$-heavy" ones —
+those whose geodesics use few $S$-letters (as $T^k$ does). `scripts/analyze_farthest.py` computes, for every
+element, the minimum number of $S^{\pm1}$-letters over all its geodesics (a dynamic programme along the BFS
+layers) and compares the farthest elements with a typical element of the most populous layer:
+""")
+
+code(r"""
+fg_path = ROOT / "data" / "farthest_geodesics.json"
+if fg_path.exists():
+    fg = pd.DataFrame(json.load(open(fg_path)))
+    fig, ax = plt.subplots(figsize=(10, 4))
+    for conv in ["directed", "undirected"]:
+        sel = fg[fg["conv"] == conv]
+        ax.plot(sel["p"], sel["max_S_among_farthest"], "o", color=PAL[conv], label=f"{conv}: most S-letters needed by a farthest element", **DOT)
+        ax.plot(sel["p"], sel["mean_S_at_mode_layer"], "-", color=PAL[conv], alpha=0.7, label=f"{conv}: mean over the most populous layer", **LINE)
+    style(ax, "minimum number of S-letters in a geodesic", "p", "S-letters")
+    ax.legend(loc="upper left")
+    plt.tight_layout()
+    fg.set_index(["p", "conv"])[["G", "n_far", "min_S_letters_of_farthest", "mean_S_at_mode_layer"]].loc[[(p, c) for p in (11, 31, 61, 101, 151, 211, 241) for c in ("directed", "undirected") if (p, c) in fg.set_index(["p", "conv"]).index]]
+else:
+    print("run scripts/analyze_farthest.py to produce data/farthest_geodesics.json")
+""")
+
+md(r"""
+The farthest elements need anywhere from zero to a dozen $S$-letters — about as many as a typical element.
+So "few $S$-letters" does not characterise them; whatever makes an element far is not visible in the
+$S$/$T$ composition of its geodesics. The question of §11.3 (3) stays open.
 """)
 
 code(r"""
@@ -865,25 +972,110 @@ def extrapolate_rho(c, n0, n1, terms=3):
     coef = np.linalg.lstsq(A, y, rcond=None)[0]
     return math.exp(coef[0])
 
-NMAX = 22
 SZ = [(0, -1, 1, 0), (0, 1, -1, 0), (1, 1, 0, 1), (1, -1, 0, 1)]
-c_sl2z = closed_walk_counts(NMAX, SZ)
+cw_path = ROOT / "data" / "closed_walks_sl2z.json"
+if cw_path.exists():  # exact counts to radius 28 from scripts/closed_walks.py
+    cw = json.load(open(cw_path)); NMAX = cw["nmax"]; c_sl2z = [int(v) for v in cw["c_2n"]]
+else:
+    NMAX = 22; c_sl2z = closed_walk_counts(NMAX, SZ)
 c_tree = tree_closed_walk_counts(NMAX)
 print("c_2n for SL_2(Z), n = 0..6:", c_sl2z[:7])
 print(f"rigorous lower bound  rho >= c_{2*NMAX}^(1/{2*NMAX}) = {c_sl2z[NMAX] ** (1 / (2*NMAX)):.4f}   (2*sqrt3 = {2*math.sqrt(3):.4f})")
-print(f"calibration on the 4-regular tree: extrapolated rho = {extrapolate_rho(c_tree, 10, NMAX):.4f}, exact 2*sqrt3 = {2*math.sqrt(3):.4f}")
-rho_hat = extrapolate_rho(c_sl2z, 10, NMAX)
-print(f"extrapolated rho(X~) for SL_2(Z) with S, T:  {rho_hat:.3f}   (the calibration error suggests ±0.005)")
+for terms in (2, 3, 4):
+    print(f"calibration on the 4-regular tree ({terms} correction terms): extrapolated rho = {extrapolate_rho(c_tree, 12, NMAX, terms):.5f}, exact 2*sqrt3 = {2*math.sqrt(3):.5f}")
+rho_hat = extrapolate_rho(c_sl2z, 12, NMAX, 3)
+print(f"extrapolated rho(X~) for SL_2(Z) with S, T:  {rho_hat:.4f}   (2, 3, 4 correction terms: "
+      f"{extrapolate_rho(c_sl2z, 12, NMAX, 2):.4f}, {extrapolate_rho(c_sl2z, 12, NMAX, 3):.4f}, {extrapolate_rho(c_sl2z, 12, NMAX, 4):.4f})")
 big = spec[spec.index >= 37]
 print(f"lambda_2(X_p) for 37 <= p <= {big.index.max()}:  min {big['lambda2'].min():.3f}, mean {big['lambda2'].mean():.3f}, max {big['lambda2'].max():.3f}")
 """)
 
 md(r"""
 So the finite graphs' second eigenvalues sit, within the precision available, *at* the spectral radius of the
-infinite graph: no exceptional eigenvalues are visible. Making this precise in both directions — a rigorous
-computation of $\rho(\widetilde X)$ (it is an algebraic number: random walks on virtually free groups have
-algebraic Green functions, see Woess's book), and $\lambda_2(X_p)$ for much larger $p$ via the representation
-theory of $\mathrm{SL}_2(\mathbb{F}_p)$ (§12) — is a well-defined project.
+infinite graph: no exceptional eigenvalues are visible. A rigorous computation of $\rho(\widetilde X)$ (it is an
+algebraic number: random walks on virtually free groups have algebraic Green functions, see Woess's book) is
+still to be done; the other direction — $\lambda_2(X_p)$ for much larger $p$ — is done next.
+
+### 10.4 The whole spectrum from the representation theory of $\mathrm{SL}_2(\mathbb{F}_p)$
+
+The regular representation of $G = \mathrm{SL}_2(\mathbb{F}_p)$ on functions on $G$ splits into irreducible
+representations $\pi$, each appearing $\dim\pi$ times, and the adjacency operator acts on each copy as
+$\pi(S) + \pi(S)^{-1} + \pi(T) + \pi(T)^{-1}$. So the $p^3 - p$ eigenvalues of $X_p$ are the eigenvalues of
+about $p$ matrices of size at most $p + 1$, with multiplicities. The irreducibles are classical:
+the *principal series* $\mathrm{Ind}(\chi)$ (functions on $\mathbb{F}_p^2\setminus 0$ homogeneous of degree a
+character $\chi$ of $\mathbb{F}_p^\times$; dimension $p+1$), containing the trivial and Steinberg representations
+and two of dimension $(p+1)/2$ as degenerate cases, and the *discrete series* (dimension $p-1$, and two of
+dimension $(p-1)/2$), which we realise inside the **Weil representation** on functions on the quadratic space
+$\mathbb{F}_{p^2}$ (norm form): $T$ acts by multiplication by $\psi(N(x))$ and $S$ by a Fourier transform for the trace
+form, with Weil index $-1$; the norm-one group $U_1$ commutes with it and its $\theta$-isotypic parts are the
+discrete-series representations. This is theta-correspondence (Howe duality) over a finite field — the same
+mechanism as theta functions and the metaplectic representation in the theory of modular forms.
+
+`godsnumber.reps` implements this and **verifies it against a direct diagonalisation of the $p^3-p$ vertex graph
+for $p = 5, 7, 11, 13$ (all eigenvalues agree to $10^{-13}$)**. `scripts/compute_spectrum_reps.py` then computes
+$\lambda_2$ and $\lambda_{\min}$ for every prime up to 400 in seconds to minutes each, and records which
+representation attains $\lambda_2$.
+""")
+
+code(r"""
+from godsnumber.reps import check_against_bruteforce, second_eigenvalue
+print("max |assembled spectrum - direct diagonalisation|, p = 7:", f"{check_against_bruteforce(7):.1e}")
+print("p = 61 via representations:", second_eigenvalue(61))
+sr_path = ROOT / "data" / "spectrum_reps.csv"
+if sr_path.exists():
+    sr = pd.read_csv(sr_path).set_index("p")
+    fig, ax = plt.subplots(figsize=(10, 4.2))
+    for key, col, lab in [("principal", PAL["directed"], "λ₂ attained in a principal-series representation"),
+                          ("discrete", PAL["undirected"], "λ₂ attained in a discrete-series representation")]:
+        sel = sr[sr["lambda2_block"].str.startswith(key)]
+        ax.plot(sel.index, sel["lambda2"], "o", color=col, label=lab, **DOT)
+    rest = sr[~sr["lambda2_block"].str.startswith(("principal", "discrete"))]
+    if len(rest):
+        ax.plot(rest.index, rest["lambda2"], "o", color=MUTED, label="λ₂ attained in a half-dimensional representation", **DOT)
+    ax.axhline(rho_hat, color=MUTED, lw=1)
+    ax.text(sr.index.max(), rho_hat + 0.004, f"ρ(X̃) ≈ {rho_hat:.3f} (extrapolated)", ha="right", color=INK2, fontsize=9)
+    ax.axhline(2 * math.sqrt(3), color=AXIS, lw=0.8)
+    ax.text(sr.index.max(), 2 * math.sqrt(3) + 0.004, "Ramanujan threshold 2√3", ha="right", color=INK2, fontsize=9)
+    style(ax, "λ₂ of Cay(SL₂(F_p), {S^±1, T^±1}) for every prime, from representation theory", "p", "λ₂")
+    ax.legend(loc="lower right"); ax.set_ylim(min(3.44, sr["lambda2"].min() - 0.02), 3.97)
+    plt.tight_layout()
+    big_sr = sr[sr.index >= 200]
+    print(f"λ₂ for 200 <= p <= {sr.index.max()}: min {big_sr['lambda2'].min():.4f}, mean {big_sr['lambda2'].mean():.4f}, max {big_sr['lambda2'].max():.4f}"
+          f"   | λ_min: min {big_sr['lambda_min'].min():.4f}, max {big_sr['lambda_min'].max():.4f}")
+    print("which block attains λ₂ (counts over all primes):"); print(sr["lambda2_block"].str.split(" chi_| theta_").str[0].value_counts().to_string())
+else:
+    print("run scripts/compute_spectrum_reps.py to produce data/spectrum_reps.csv")
+""")
+
+code(r"""
+# the empirical eigenvalue distribution for a few primes, against the Kesten-McKay density of the 4-regular tree
+hist_files = sorted(ROOT.glob("data/spectrum_hist_p*.json"), key=lambda f: int(f.stem.split("_p")[1]))
+if hist_files:
+    fig, ax = plt.subplots(figsize=(10, 4.2))
+    xs = np.linspace(-3.99, 3.99, 800)
+    km = np.where(np.abs(xs) <= 2 * math.sqrt(3), (4 / (2 * math.pi)) * np.sqrt(np.maximum(12 - xs**2, 0)) / (16 - xs**2), 0)
+    ax.plot(xs, km, color=MUTED, lw=1, label="Kesten–McKay density (4-regular tree, limit of Ramanujan-like families)")
+    ramp2 = [SEQ[i] for i in np.linspace(2, len(SEQ) - 1, len(hist_files)).round().astype(int)]
+    for f, col in zip(hist_files, ramp2):
+        h = json.load(open(f)); bins = np.array(h["bins"]); cnt = np.array(h["counts"]); N = h["p"]**3 - h["p"]
+        dens = cnt / N / (bins[1] - bins[0])
+        ax.step(bins[:-1], dens, where="post", color=col, lw=1.2, label=f"X_p, p = {h['p']}")
+    for v in (rho_hat, -rho_hat):
+        ax.axvline(v, color=AXIS, lw=0.8)
+    ax.text(rho_hat, ax.get_ylim()[1] * 0.9, " ±ρ(X̃)", color=INK2, fontsize=9)
+    style(ax, "eigenvalue density of X_p versus the tree density", "eigenvalue", "density")
+    ax.legend(loc="upper left")
+    plt.tight_layout()
+""")
+
+md(r"""
+Three things to read off. First, the second eigenvalue stays glued to the extrapolated $\rho(\widetilde X)$ as $p$
+grows through several hundred — the finite-field "Selberg phenomenon" of §10.3 survives a tenfold increase of the
+range. Second, $\lambda_2$ is attained sometimes in a principal-series and sometimes in a discrete-series
+representation, with no visible rule; a rule would be a statement about the arithmetic of $p$. Third, the
+eigenvalue density is not the Kesten–McKay density of the tree (the limit for Ramanujan families): it is wider,
+with its support reaching $\pm\rho(\widetilde X) \approx \pm 3.93$, as Benjamini–Schramm convergence of $X_p$ to
+$\widetilde X$ demands.
 """)
 
 # ----------------------------------------------------------------------------------------
@@ -952,10 +1144,9 @@ print("checked: T^-1 = S^3 T S T S, a directed word of length 7")
 md(r"""
 ### 11.3 Open questions (precise formulations)
 
-1. **Prove the recurrences of §8.2.** Show that the spheres of $\mathrm{SL}_2(\mathbb{Z})$ satisfy
-   $|L_n| = 4F_{n+2}$ ($n \ge 3$) for $\{S^{\pm1}, T^{\pm1}\}$ and $|L_n| = |L_{n-1}| + |L_{n-3}|$ ($n \ge 8$) for
-   $\{S, T\}$. Route: normal forms in $\mathrm{PSL}_2(\mathbb{Z}) = \langle s\rangle * \langle u\rangle$, $s = \bar S$,
-   $u = \overline{ST}$, keeping track of the central element $-I = S^2$.
+1. ~~Prove the recurrences of §8.2.~~ **Done** (§8.4, `docs/theorems.md`, Theorem 1): both recurrences, with
+   exact generating functions, by amalgam normal forms and a finite Lipschitz check. What remains here is
+   cosmetic: a proof of the Lipschitz lemma by hand instead of by enumeration.
 2. **Does $\lim_{p\to\infty} G(p)/\ln p$ exist?** The data of §7 are consistent with a limit but cannot establish
    one; even $\limsup$ vs $\liminf$ along subsequences of primes is unknown. Related: is $G(p) - n_{\mathrm{growth}}(p)$
    bounded by a constant times $\ln p$ with a small constant, or by something smaller (e.g. $\ln\ln p$)?
@@ -1018,28 +1209,44 @@ Distances in $\mathrm{PSL}_2 = \mathrm{SL}_2/\{\pm I\}$ are obtained by folding:
 """)
 
 code(r"""
-from godsnumber.lps import lps_generators, psl_distances
+from godsnumber.lps import lps_generators, psl_distances, norm_q_quaternions
 
+# a live check for one prime, then the batch results of scripts/compute_lps.py for q = 5, 13, 17
+p = 41; r = bfs(p, gens=lps_generators(p, 5), keep_dist=True); dpsl = psl_distances(r.dist, p)
+print(f"p = {p}, q = 5: {len(norm_q_quaternions(5))} generators, God's number of PSL_2(F_41) = {int(dpsl.max())}")
 rows = []
-for p in [29, 41, 61, 89, 101, 109, 149, 181, 229, 241, 269, 281]:      # p ≡ 1 (mod 4) and 5 a square mod p
-    g = lps_generators(p)
-    r = bfs(p, gens=g, keep_dist=True)
-    dpsl = psl_distances(r.dist, p)
-    Npsl = group_order(p) // 2
-    G = int(dpsl.max())
-    rows.append({"p": p, "N = |PSL_2(F_p)|": Npsl, "G (LPS, q=5)": G, "log_5 N": round(math.log(Npsl, 5), 2),
-                 "G / log_5 N": round(G / math.log(Npsl, 5), 3),
-                 "LPS upper bound": math.floor(2 * math.log(Npsl, 5) + 2 * math.log(2, 5) + 1),
-                 "mean length": round(float(dpsl.sum() / group_order(p)), 2),
-                 "G with S,T (SL_2, undirected)": DATA["undirected"][p]["diameter"]})
-lps_table = pd.DataFrame(rows).set_index("p")
-print("Sardari's lower bound is (4/3) log_5 N - O(1), i.e. ratio 1.333")
+for q in (5, 13, 17):
+    f = ROOT / "data" / f"lps_q{q}.jsonl"
+    if f.exists():
+        rows += [json.loads(line) for line in open(f) if line.strip()]
+lps = pd.DataFrame(rows)
+lps["log_q N"] = np.log(lps["N_psl"]) / np.log(lps["q"])
+lps["G / log_q N"] = lps["G_psl"] / lps["log_q N"]
+lps["LPS upper bound"] = np.floor(2 * lps["log_q N"] + 2 * np.log(2) / np.log(lps["q"]) + 1).astype(int)
+lps["mean length"] = [sum(n * s for n, s in enumerate(L)) / sum(L) for L in lps["layer_sizes_psl"]]
+fig, ax = plt.subplots(figsize=(10, 4.2))
+for q, col in zip((5, 13, 17), (PAL["directed"], PAL["undirected"], SEQ[2])):
+    sel = lps[lps["q"] == q]
+    if len(sel):
+        ax.plot(sel["log_q N"], sel["G / log_q N"], "o", color=col, label=f"q = {q}  ({q + 1}-regular)", **DOT)
+ax.axhline(4 / 3, color=MUTED, lw=1); ax.text(lps["log_q N"].max(), 4 / 3 + 0.01, "Sardari lower bound 4/3", ha="right", color=INK2, fontsize=9)
+ax.axhline(2, color=AXIS, lw=0.8); ax.text(lps["log_q N"].max(), 2.01, "LPS upper bound 2", ha="right", color=INK2, fontsize=9)
+style(ax, "God's number of PSL₂(F_p) with LPS generators, divided by log_q N", "log_q N", "G / log_q N")
+ax.legend(loc="lower left"); ax.set_ylim(1.0, 2.1)
+plt.tight_layout()
+for q in (5, 13, 17):
+    sel = lps[lps["q"] == q]
+    if len(sel):
+        print(f"q = {q:2d}: {len(sel)} primes up to {sel['p'].max()},  G/log_q N in [{sel['G / log_q N'].min():.3f}, {sel['G / log_q N'].max():.3f}],"
+              f"  mean of the last five: {sel.sort_values('p')['G / log_q N'].tail(5).mean():.3f}")
+lps_table = lps[lps["q"] == 5].set_index("p")[["N_psl", "G_sl2", "G_psl", "log_q N", "G / log_q N", "LPS upper bound", "mean length"]].round(3)
+lps_table["G with S,T (SL_2, undirected)"] = [DATA["undirected"].get(p, {}).get("diameter") for p in lps_table.index]
 lps_table
 """)
 
 md(r"""
-The ratio $G/\log_5 N$ lies between about $1.25$ and $1.5$ for these sizes (mostly $1.35$–$1.45$; the integer
-rounding of $G$ alone moves it by $\pm 0.07$ here), consistent with Sardari's $\tfrac43 + o(1)$ and far below the
+For all three degrees the ratio $G/\log_q N$ sits in a band around $1.3$–$1.5$ (the integer rounding of $G$
+alone moves it by several hundredths at these sizes), consistent with Sardari's $\tfrac43 + o(1)$ and far below the
 Ramanujan upper bound $2$. For comparison, with $S, T$ and the same group the (undirected)
 God's number is about $2.5\,\log_3 N$ — three times the trivial counting bound and about twice as inefficient as
 the Ramanujan set after adjusting for the degree. Two remarks:
@@ -1112,6 +1319,7 @@ print(f"Lower-bound slopes: counting 3/ln2 = {3/math.log(2):.2f} (dir), 3/ln3 = 
 print(f"Share of G(p) explained by the SL_2(Z)-growth bound at p = {primes[-1]}: "
       f"{table.loc[primes[-1], 'growth_lb_dir'] / G('directed', primes[-1]):.0%} (dir), "
       f"{table.loc[primes[-1], 'growth_lb_und'] / G('undirected', primes[-1]):.0%} (und)")
+print(f"Theorem (§8.4): sum |L_n| x^n = {und_gf} (undirected), {dir_gf} (directed)")
 print()
 sd_dir = stats.xs("directed", level="conv")["sd"]; sd_und = stats.xs("undirected", level="conv")["sd"]
 print(f"Spread of the length distribution for p >= 61: sd ≈ {sd_dir[sd_dir.index >= 61].mean():.2f} (dir), {sd_und[sd_und.index >= 61].mean():.2f} (und)")
@@ -1120,8 +1328,14 @@ print(f"Primes for which some ±T^k is a farthest element: "
       f"{int(summary.loc['undirected', 'last_layer_contains_some_T_power'])}/{len(primes)} (und)")
 print()
 print(f"Spectral radius of Cay(SL_2(Z), S^±1, T^±1): rigorously >= {c_sl2z[NMAX] ** (1/(2*NMAX)):.3f} > 2*sqrt3 = {2*math.sqrt(3):.3f}; extrapolated ≈ {rho_hat:.3f}")
-print(f"lambda_2 of the finite graphs, 37 <= p <= {big.index.max()}: {big['lambda2'].min():.3f} .. {big['lambda2'].max():.3f}  (not Ramanujan; at the infinite graph's spectral radius)")
-print(f"LPS (q = 5) Ramanujan generators: G/log_5 N ranges {lps_table['G / log_5 N'].min():.2f} .. {lps_table['G / log_5 N'].max():.2f}  (Sardari lower bound 4/3; LPS upper bound 2)")
+print(f"lambda_2 of the finite graphs, 37 <= p <= {big.index.max()} (ARPACK): {big['lambda2'].min():.3f} .. {big['lambda2'].max():.3f}  (not Ramanujan; at the infinite graph's spectral radius)")
+if sr_path.exists():
+    b2 = sr[sr.index >= 200]
+    print(f"lambda_2 via representation theory, 200 <= p <= {sr.index.max()}: {b2['lambda2'].min():.4f} .. {b2['lambda2'].max():.4f}")
+for q in (5, 13, 17):
+    sel = lps[lps["q"] == q]
+    if len(sel):
+        print(f"LPS Ramanujan generators, q = {q:2d}, p <= {sel['p'].max()}: G/log_q N in [{sel['G / log_q N'].min():.2f}, {sel['G / log_q N'].max():.2f}]  (Sardari 4/3; LPS upper bound 2)")
 print()
 print("executed on", time.strftime("%Y-%m-%d %H:%M"), "with numpy", np.__version__)
 """)

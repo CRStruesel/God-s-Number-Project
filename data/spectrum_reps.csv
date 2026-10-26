@@ -1,0 +1,62 @@
+p,N,lambda2,lambda2_block,lambda_min,lambda_min_block,seconds
+5,120,3.69931520,Ind(quadratic) = two reps of dim (p+1)/2,-3.61803399,Ind(quadratic) = two reps of dim (p+1)/2,0.0
+7,336,3.74759498,principal series chi_2,-3.78775904,Ind(1) = trivial + Steinberg,0.0
+11,1320,3.82327490,principal series chi_4,-3.87750719,discrete series theta_4,0.0
+13,2184,3.84677096,principal series chi_4,-3.91651553,Ind(quadratic) = two reps of dim (p+1)/2,0.0
+17,4896,3.86708761,principal series chi_4,-3.88118863,discrete series theta_2,0.0
+19,6840,3.88699942,principal series chi_6,-3.91339195,discrete series theta_8,0.0
+23,12144,3.90394588,principal series chi_6,-3.91841179,discrete series theta_4,0.0
+29,24360,3.91622680,principal series chi_8,-3.93067149,discrete series theta_4,0.1
+31,29760,3.89699368,principal series chi_8,-3.91837281,Ind(1) = trivial + Steinberg,0.0
+37,50616,3.91937638,principal series chi_12,-3.93977180,Ind(quadratic) = two reps of dim (p+1)/2,0.1
+41,68880,3.91655519,principal series chi_12,-3.91165239,Ind(1) = trivial + Steinberg,0.1
+43,79464,3.92520307,principal series chi_16,-3.92400194,principal series chi_6,0.1
+47,103776,3.92026234,principal series chi_22,-3.92503500,discrete series theta_8,0.1
+53,148824,3.92113111,principal series chi_14,-3.92514924,principal series chi_2,0.1
+59,205320,3.92793062,principal series chi_24,-3.91628904,discrete series theta_2,0.2
+61,226920,3.91597414,discrete series theta_22,-3.92462444,Ind(quadratic) = two reps of dim (p+1)/2,0.3
+67,300696,3.92651230,principal series chi_16,-3.91564131,principal series chi_18,0.3
+71,357840,3.92679777,principal series chi_26,-3.91609719,discrete series theta_16,0.6
+73,388944,3.93976964,Ind(quadratic) = two reps of dim (p+1)/2,-3.92424625,discrete series theta_16,0.5
+79,492960,3.91953954,principal series chi_36,-3.92223595,principal series chi_32,1.0
+83,571704,3.92125590,discrete series theta_32,-3.92028327,principal series chi_4,1.3
+89,704880,3.92882423,principal series chi_32,-3.92526747,discrete series theta_4,1.3
+97,912576,3.93687841,Ind(quadratic) = two reps of dim (p+1)/2,-3.92651742,discrete series theta_22,2.5
+101,1030200,3.92458616,principal series chi_20,-3.92384909,discrete series theta_32,2.1
+103,1092624,3.92330097,discrete series theta_36,-3.92202651,principal series chi_22,2.3
+107,1224936,3.92142530,principal series chi_20,-3.92063673,discrete series theta_40,0.9
+109,1294920,3.92835238,discrete series theta_22,-3.93207619,Ind(quadratic) = two reps of dim (p+1)/2,2.1
+113,1442784,3.91984300,principal series chi_50,-3.92174304,discrete series theta_8,1.1
+127,2048256,3.93044451,principal series chi_48,-3.92474716,discrete series theta_2,1.7
+131,2247960,3.92294755,discrete series theta_28,-3.92406641,principal series chi_4,2.1
+137,2571216,3.92912802,principal series chi_22,-3.92510002,principal series chi_62,2.5
+139,2685480,3.93086495,principal series chi_64,-3.92266448,principal series chi_36,2.5
+149,3307800,3.92427718,principal series chi_20,-3.93011554,discrete series theta_42,2.5
+151,3442800,3.92713668,principal series chi_52,-3.92717102,principal series chi_28,2.7
+157,3869736,3.92953018,discrete series theta_40,-3.92878400,Ind(quadratic) = two reps of dim (p+1)/2,3.4
+163,4330584,3.92604893,principal series chi_54,-3.92308588,discrete series theta_20,3.8
+167,4657296,3.92777745,discrete series theta_38,-3.92396186,discrete series theta_52,4.5
+173,5177544,3.92517943,discrete series theta_86,-3.92932717,discrete series theta_2,4.4
+179,5735160,3.92386691,discrete series theta_74,-3.92557416,discrete series theta_86,5.5
+181,5929560,3.92161088,principal series chi_80,-3.93074093,Ind(quadratic) = two reps of dim (p+1)/2,5.6
+191,6967680,3.93140034,discrete series theta_86,-3.93035455,principal series chi_14,8.5
+193,7188864,3.93120303,Ind(quadratic) = two reps of dim (p+1)/2,-3.93078790,discrete series theta_36,8.6
+197,7645176,3.92612984,discrete series theta_40,-3.92539005,principal series chi_82,10.2
+199,7880400,3.92448652,discrete series theta_28,-3.92758208,discrete series theta_64,9.1
+211,9393720,3.93056365,principal series chi_30,-3.92587034,discrete series theta_40,13.3
+223,11089344,3.93234298,principal series chi_70,-3.92754786,discrete series theta_76,12.4
+227,11696856,3.92537626,discrete series theta_78,-3.92730289,principal series chi_72,12.5
+229,12008760,3.92742420,Ind(quadratic) = two reps of dim (p+1)/2,-3.93204290,Ind(quadratic) = two reps of dim (p+1)/2,13.5
+233,12649104,3.92929904,discrete series theta_86,-3.92834665,discrete series theta_18,17.5
+239,13651680,3.92728439,principal series chi_78,-3.92352956,principal series chi_44,16.4
+241,13997280,3.93445264,Ind(quadratic) = two reps of dim (p+1)/2,-3.92614549,discrete series theta_30,19.9
+251,15813000,3.93059454,discrete series theta_62,-3.92628782,discrete series theta_88,19.5
+257,16974336,3.92693612,discrete series theta_80,-3.92388341,principal series chi_44,26.0
+263,18191184,3.92803274,discrete series theta_28,-3.92257226,discrete series theta_116,23.1
+269,19464840,3.92971389,discrete series theta_50,-3.92580433,discrete series theta_56,30.5
+271,19902240,3.92939692,principal series chi_66,-3.92754799,discrete series theta_104,26.8
+277,21253656,3.93052946,principal series chi_48,-3.92817527,Ind(quadratic) = two reps of dim (p+1)/2,30.5
+281,22187760,3.92715178,discrete series theta_116,-3.92319900,principal series chi_80,25.5
+283,22664904,3.92721734,principal series chi_84,-3.92711038,principal series chi_24,36.6
+293,25153464,3.92522298,principal series chi_144,-3.92401148,discrete series theta_142,33.0
+307,28934136,3.93359512,discrete series theta_60,-3.92865714,principal series chi_132,42.5
