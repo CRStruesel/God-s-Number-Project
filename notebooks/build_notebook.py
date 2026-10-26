@@ -1033,11 +1033,11 @@ if sr_path.exists():
     if len(rest):
         ax.plot(rest.index, rest["lambda2"], "o", color=MUTED, label="λ₂ attained in a half-dimensional representation", **DOT)
     ax.axhline(rho_hat, color=MUTED, lw=1)
-    ax.text(sr.index.max(), rho_hat + 0.004, f"ρ(X̃) ≈ {rho_hat:.3f} (extrapolated)", ha="right", color=INK2, fontsize=9)
+    ax.text(sr.index.max() * 0.55, rho_hat - 0.012, f"ρ(X̃) ≈ {rho_hat:.3f} (extrapolated spectral radius of the infinite graph)", ha="center", color=INK2, fontsize=9)
     ax.axhline(2 * math.sqrt(3), color=AXIS, lw=0.8)
-    ax.text(sr.index.max(), 2 * math.sqrt(3) + 0.004, "Ramanujan threshold 2√3", ha="right", color=INK2, fontsize=9)
+    ax.text(sr.index.max() * 0.55, 2 * math.sqrt(3) + 0.006, "Ramanujan threshold 2√3", ha="center", color=INK2, fontsize=9)
     style(ax, "λ₂ of Cay(SL₂(F_p), {S^±1, T^±1}) for every prime, from representation theory", "p", "λ₂")
-    ax.legend(loc="lower right"); ax.set_ylim(min(3.44, sr["lambda2"].min() - 0.02), 3.97)
+    ax.legend(loc="center right"); ax.set_ylim(min(3.44, sr["lambda2"].min() - 0.02), 3.97)
     plt.tight_layout()
     big_sr = sr[sr.index >= 200]
     print(f"λ₂ for 200 <= p <= {sr.index.max()}: min {big_sr['lambda2'].min():.4f}, mean {big_sr['lambda2'].mean():.4f}, max {big_sr['lambda2'].max():.4f}"
@@ -1070,12 +1070,34 @@ if hist_files:
 
 md(r"""
 Three things to read off. First, the second eigenvalue stays glued to the extrapolated $\rho(\widetilde X)$ as $p$
-grows through several hundred — the finite-field "Selberg phenomenon" of §10.3 survives a tenfold increase of the
+grows through several hundred — the finite-field "Selberg phenomenon" of §10.3 survives a threefold increase of the
 range. Second, $\lambda_2$ is attained sometimes in a principal-series and sometimes in a discrete-series
-representation, with no visible rule; a rule would be a statement about the arithmetic of $p$. Third, the
-eigenvalue density is not the Kesten–McKay density of the tree (the limit for Ramanujan families): it is wider,
-with its support reaching $\pm\rho(\widetilde X) \approx \pm 3.93$, as Benjamini–Schramm convergence of $X_p$ to
-$\widetilde X$ demands.
+representation (occasionally in one of the half-dimensional ones), with no visible rule; a rule would be a statement
+about the arithmetic of $p$. Third, the eigenvalue density is not the Kesten–McKay density of the tree (the limit for
+Ramanujan families): it is wider, with its support reaching $\pm\rho(\widetilde X) \approx \pm 3.93$, as
+Benjamini–Schramm convergence of $X_p$ to $\widetilde X$ demands.
+
+**Half of the spectrum is explicit.** The comb-like structure on $[-2, 2]$ has a one-line explanation. Call a
+representation $\pi$ *odd* if $\pi(-I) = -1$. Since $S^{-1} = S^3 = (-I)S$, on an odd representation
+$\pi(S^{-1}) = -\pi(S)$, so $\pi(S) + \pi(S)^{-1} = 0$ and the adjacency operator reduces to $\pi(T) + \pi(T)^{-1}$,
+whose eigenvalues are $2\cos(2\pi j/p)$. On the whole of $\ell^2(G)$: the subgroup $\{\pm I\} \times \langle T\rangle
+\cong \mathbb{Z}/2p$ acts freely by right multiplication, so each of its $2p$ characters occurs $(p^3-p)/2p = (p^2-1)/2$
+times, and the odd functions with $T$-eigenvalue $e^{2\pi i j/p}$ are $A$-eigenvectors with eigenvalue $2\cos(2\pi j/p)$.
+**Hence every value $2\cos(2\pi j/p)$, $j = 0, \dots, p-1$, is an eigenvalue of $X_p$ of multiplicity at least
+$(p^2-1)/2$, and these account for exactly half of all eigenvalues.** (Odd representations: the principal series with
+$\chi(-1) = -1$ and the discrete series with $\theta(-1) = -1$.) The density plot shows this comb, with the arcsine
+singularities of $2\cos$ at $\pm 2$ producing the two spikes. All the interesting spectrum — $\lambda_2$ included — lives
+in the **even** representations, where $A = 2\pi(S) + \pi(T) + \pi(T)^{-1}$ with $\pi(S)$ an involution.
+""")
+
+code(r"""
+from godsnumber.reps import full_spectrum
+p = 61
+ev_all = full_spectrum(p)
+print(f"p = {p}: (p²−1)/2 = {(p*p-1)//2}")
+for j in (0, 1, 7, 30):
+    v = 2 * math.cos(2 * math.pi * j / p)
+    print(f"   multiplicity of 2cos(2πj/p) = {v:+.5f} (j = {j}): {int(np.sum(np.abs(ev_all - v) < 1e-7))}")
 """)
 
 # ----------------------------------------------------------------------------------------

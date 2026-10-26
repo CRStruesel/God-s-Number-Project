@@ -256,6 +256,25 @@ multiset with a direct diagonalisation of the p³ − p vertex graph: the maxima
 index γ = −1 (= (1/p) Σ_x ψ(N(x)), the Gauss sum of the anisotropic plane). With this, λ₂(X_p) costs
 O(p⁴) operations instead of a p³-vertex eigenproblem, and one learns which representation attains it.
 
+## Proposition 7b (half of the spectrum is explicit)
+
+For every j = 0, …, p−1 the number 2cos(2πj/p) is an eigenvalue of X_p with multiplicity at least
+(p²−1)/2. These eigenvalues (with these multiplicities) are exactly half of the spectrum, and the
+other half is the spectrum of 2π(S) + π(T) + π(T)⁻¹ over the *even* irreducible representations
+π (those with π(−I) = 1), each counted dim(π) times.
+
+*Proof.* The subgroup H = {±I} × ⟨T⟩ ≅ ℤ/2 × ℤ/p acts freely on G by right multiplication, so ℓ²(G)
+restricted to H is (p³−p)/(2p) = (p²−1)/2 copies of the regular representation of H; thus for each
+character (ε, ζʲ) of H the joint eigenspace E_{ε,j} = {f : f(−x) = ε f(x), f(xT) = ζʲ f(x)} has
+dimension (p²−1)/2, where ζ = e^{2πi/p}. For f ∈ E_{−1,j}: f(xS⁻¹) = f(x(−I)S) = −f(xS), so
+(R(S) + R(S⁻¹))f = 0, and (R(T) + R(T⁻¹))f = (ζʲ + ζ⁻ʲ)f = 2cos(2πj/p) f. Hence A f = 2cos(2πj/p) f on
+E_{−1,j}. The odd functions ⊕_j E_{−1,j} form half of ℓ²(G). On the even functions, R(S⁻¹) = R(S),
+so A = 2R(S) + R(T) + R(T⁻¹), and R(S)² = R(−I) = 1 there. Decomposing the even part into irreducibles
+gives the last statement. ∎
+
+This is why the eigenvalue density of X_p shows a "comb" on [−2, 2] with spikes at ±2 (the arcsine
+law of 2cos), and why λ₂, which is about 3.93, comes from even representations.
+
 ---
 
 ## Theorem 8 (Lubotzky–Phillips–Sarnak; recalled) and the numerical finding
