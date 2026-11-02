@@ -1338,18 +1338,18 @@ exactly. It predicts the whole distribution of $\ell$:
 code(r"""
 lamv = {"directed": psi, "undirected": phi}
 BZ = {c: np.cumsum(np.array(layers_extended(140, c), dtype=object)).astype(float) for c in lamv}
-rows = []
+poisson_rows = []
 for conv in ["directed", "undirected"]:
     for p in [101, 211, 499, 1009]:
         L = np.array(DATA[conv][p]["layer_sizes"], float); N = L.sum()
         model = 1 - np.exp(-BZ[conv][:len(L)] / N)
         unc = N * np.exp(-BZ[conv] / N)
-        rows.append({"conv": conv, "p": p, "G": len(L) - 1, "Poisson G": int(np.argmax(unc < 0.5)),
+        poisson_rows.append({"conv": conv, "p": p, "G": len(L) - 1, "Poisson G": int(np.argmax(unc < 0.5)),
                      "mean ℓ": round(float((np.arange(len(L)) * L).sum() / N), 2),
                      "Poisson mean": round(float(np.sum(np.exp(-BZ[conv] / N))), 2),
                      "sup |actual − model| of P(ℓ ≤ n)": round(float(np.max(np.abs(np.cumsum(L) / N - model))), 4),
                      "G / log_λ N": round((len(L) - 1) / (math.log(N) / math.log(lamv[conv])), 3)})
-pd.DataFrame(rows).set_index(["conv", "p"])
+pd.DataFrame(poisson_rows).set_index(["conv", "p"])
 """)
 
 md(r"""
@@ -1464,7 +1464,7 @@ print(f"Share of G(p) explained by the SL_2(Z)-growth bound at p = {primes[-1]}:
       f"{table.loc[primes[-1], 'growth_lb_und'] / G('undirected', primes[-1]):.0%} (und)")
 print(f"Theorem (§8.4): sum |L_n| x^n = {und_gf} (undirected), {dir_gf} (directed)")
 print(f"Ball-filling model (§13): sup-norm error of P(ℓ ≤ n) at p = 1009: "
-      f"{max(r['sup |actual − model| of P(ℓ ≤ n)'] for r in rows if r['p'] == 1009):.3f}; "
+      f"{max(r['sup |actual − model| of P(ℓ ≤ n)'] for r in poisson_rows if r['p'] == 1009):.3f}; "
       f"tail rate μ = {tail_fit['undirected']:.2f} (undirected; φ³ = {phi**3:.2f}), {tail_fit['directed']:.2f} (directed)")
 print()
 sd_dir = stats.xs("directed", level="conv")["sd"]; sd_und = stats.xs("undirected", level="conv")["sd"]
