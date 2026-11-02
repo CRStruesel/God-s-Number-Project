@@ -36,6 +36,11 @@ generated and executed by `notebooks/build_notebook.py`, so its outputs are repr
   SL₂(ℤ) (≈ 3.93): no "exceptional eigenvalues" are visible — a graph analogue of Selberg's conjecture.
 * With Lubotzky–Phillips–Sarnak (Ramanujan) generators instead of S, T (q = 5, p up to 881),
   God's number is ≈ (4/3)·log_q N, matching Sardari's bound; the notebook's §12 explains how modular forms enter.
+* **Transfer operator** (`docs/transfer_operator.md`, §13.2): a verified 12-state automaton for the geodesic
+  words turns the sphere operators into compressions of powers of one matrix per representation; a proved lemma
+  converts a uniform bound ‖Aₙ^π‖ ≤ Cφ^{βn} into G(p) ≤ log_φN/(1−β) + O(1) with explicit constants; the bound
+  holds numerically with β ≈ 0.61 (so G ≤ 2.6·log_φN), and the gap itself is a Bourgain–Gamburd problem for the
+  Markov measure of the automaton (one-state, hence available, for the Stern–Brocot generators {T, U}).
 * **Random bulk, arithmetic tail** (§13): the parameter-free ball-filling model P(ℓ ≤ n) = 1 − exp(−|Bₙ(ℤ)|/N)
   reproduces the exact length distribution to a few percent for every prime; beyond log_λ N the tail is geometric
   with a universal rate — μ ≈ 4.25 ≈ φ³ in the undirected case — which predicts G(p) → (4/3)·log_φ(p³), Sardari's

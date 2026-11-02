@@ -1534,6 +1534,50 @@ themselves (pair and $k$-fold coincidence counts), not with operator norms; `doc
 routes (twisted transfer operators of the geodesic automaton à la Bourgain–Kontorovich / Magee–Oh–Winter, which
 would at least give an explicit-constant diameter bound; averaging over $p$ for the variance), and why the limit law
 itself is probably beyond current tools.
+
+### 13.2 The twisted transfer operator and the explicit-constant diameter bound
+
+`docs/transfer_operator.md` carries this out as far as it goes today. The geodesic words of Theorem 1 are accepted
+by an explicit **12-state unambiguous automaton** (`godsnumber/automaton.py`): its accepting paths of length $n$ are
+in bijection with $L_n(\mathbb{Z})$ (verified: path counts = Theorem 1 to $n = 40$, words = geodesic words to length
+14, Perron root $\varphi$). Hence for every representation $\pi$ of $\mathrm{SL}_2(\mathbb{F}_p)$ the sphere operators
+$A_n^\pi = \sum_{g \in L_n}\pi(g)$ are compressions of the powers of one matrix, the transfer operator
+$M^\pi = \sum_{q \to^a q'} E_{qq'} \otimes \pi(a)$ on $\mathbb{C}^{12}\otimes V_\pi$. **Theorem 3 of that note (proved):**
+if $\|A_n^\pi\| \le C\varphi^{\beta n}$ for all nontrivial $\pi$ (Hypothesis E($\beta$)), then
+$G(p) \le \log_\varphi N/(1-\beta) + O(1)$ with every constant explicit. The cells below build the automaton and
+measure the *visible* growth rates $\limsup \|A_n^\pi\|^{1/n}$ for every irreducible $\pi$ (the spectral radius
+of $M^\pi$ itself overestimates them — some eigenvectors are invisible from the start/accept vectors).
+""")
+
+code(r"""
+from godsnumber.automaton import build_geodesic_automaton, verify as verify_automaton
+from godsnumber.transfer import visible_rates, free_monoid_rates, plancherel_check
+aut = build_geodesic_automaton()
+print("automaton:", len(aut.states), "states,", len(aut.transitions), "transitions;", verify_automaton(12, 40))
+print("Plancherel identity (p = 7, n <= 8), max relative error:", f"{plancherel_check(7, 8):.1e}")
+print()
+for p in (31, 61):
+    vr = sorted(visible_rates(p, 48, 24, aut), key=lambda r: -r["rate"])
+    print(f"p = {p}: largest visible rates of ||A_n^pi||  (beta = log_phi rate):")
+    for r in vr[:3]:
+        print(f"     {r['block']:28s} dim {r['dim']:3d}   rate {r['rate']:.4f}   beta {r['beta']:.3f}")
+    print(f"     median over the {len(vr)} blocks: {np.median([r['rate'] for r in vr]):.3f};  "
+          f"implied diameter constant 1/(1-beta_max) = {1/(1-vr[0]['beta']):.2f}  (bound G <= {1/(1-vr[0]['beta']):.2f} log_phi N + O(1))")
+print()
+for p in (31, 101):
+    fr = free_monoid_rates(p); best = max(fr, key=lambda r: r["rho"])
+    print(f"{{T, U}} free monoid, p = {p}: max spectral radius of pi(T)+pi(U) = {best['rho']:.4f} = 2^{math.log(best['rho'], 2):.3f} ({best['block']});"
+          f" median {np.median([r['rho'] for r in fr]):.3f} (sqrt 2 = {2**0.5:.3f})")
+""")
+
+md(r"""
+So Hypothesis E($\beta$) holds numerically with $\beta \approx 0.61$, uniformly in $p$, which would give
+$G(p) \le 2.6\,\log_\varphi N + O(1)$ — not sharp (the truth is $\approx 1.2\,\log_\varphi N$), but it would be the
+**first explicit constant** for $S, T$. The missing piece is the uniform gap itself: a Bourgain–Gamburd argument
+for the *Markov* measure of the automaton. For the free monoid $\{T, U\}$ (Stern–Brocot generators) the automaton
+has one state, the transfer operator is $\pi(T) + \pi(U)$, and the needed statement is Bourgain–Gamburd for the
+non-symmetric measure $\tfrac12(\delta_T + \delta_U)$, which their method covers; so an explicit-constant God's
+number for $\{T, U\}$ is within reach of the literature, and $S, T$ needs only the 12-state bookkeeping on top.
 """)
 
 md(r"""
