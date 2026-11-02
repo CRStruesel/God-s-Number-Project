@@ -1439,6 +1439,101 @@ height), in the family of problems studied by Bourgain–Kontorovich (Zaremba) a
 (Theorem 1), and in the bulk there is nothing to classify (Poisson). It becomes a good problem once it is restricted to
 the **excess tail** — the $N\cdot\mu^{-t}$ elements beyond $\log_\lambda N + t$ that the random model cannot account for —
 where the data show both a universal law (the exponent) and explicit structure (the families).
+
+### 13.1 Towards a proof of Conjecture A: lift counts, their variance, and the sphere operators
+
+`docs/conjecture_A.md` contains what can be proved about Conjecture A today. In short: the law is exact below the
+injectivity radius (Theorem A.1); the conjecture is *equivalent* to Poisson frequencies for the $k$-fold
+coincidences of the balls of $\mathrm{SL}_2(\mathbb{Z})$ modulo $p$ (Theorem A.5, method of moments); its second-moment
+shadow — the typical length is $\log_\varphi(N/c_\varphi) + O(1)$ — follows from a **variance hypothesis** on the lift
+counts $c_n(\gamma) = \#\{g \in L_n(\mathbb{Z}) : g \equiv \gamma\}$ (Theorem A.4); and the adjacency spectral gap cannot
+reach this scale at all (Theorem A.3: with $\lambda_2 \approx 3.93$ it gives "typical distance $\le 28\ln N$" against the
+truth $2.1 \ln N$, because the gap governs mixing while the typical length is governed by growth). The cells below
+compute the lift counts exactly for $n \le 22$ and test the hypotheses.
+""")
+
+code(r"""
+from godsnumber.index import inverse_table as _it
+SZ4 = [(0, -1, 1, 0), (0, 1, -1, 0), (1, 1, 0, 1), (1, -1, 0, 1)]
+def imul4(m, g):
+    a, b, c, d = m; e, f, gg, h = g
+    return (a*e + b*gg, a*f + b*h, c*e + d*gg, c*f + d*h)
+NM = 22
+sl2z_layers_list = []; seen = {(1, 0, 0, 1)}; lay = [(1, 0, 0, 1)]
+for n in range(1, NM + 1):
+    nxt = []
+    for m in lay:
+        for g in SZ4:
+            y = imul4(m, g)
+            if y not in seen: seen.add(y); nxt.append(y)
+    lay = nxt; sl2z_layers_list.append(lay)
+def lift_counts(p, n):
+    c = np.zeros(group_order(p))
+    for (a, b, cc, d) in sl2z_layers_list[n - 1]:
+        c[encode_scalar((a % p, b % p, cc % p, d % p), p)] += 1
+    return c
+
+# Hypothesis V: variance / mean of the lift counts of the sphere L_n(Z) in SL_2(F_p)
+vm = {}
+for p in (31, 61, 101, 151):
+    vm[p] = []
+    for n in range(1, NM + 1):
+        c = lift_counts(p, n); mean = len(sl2z_layers_list[n - 1]) / group_order(p)
+        vm[p].append(np.mean((c - mean) ** 2) / mean)
+fig, ax = plt.subplots(figsize=(9, 3.8))
+for p, col in zip((31, 61, 101, 151), (SEQ[1], SEQ[4], SEQ[7], SEQ[9])):
+    ax.plot(range(1, NM + 1), vm[p], "o-", color=col, label=f"p = {p}", **LINE, **DOT)
+ax.axhline(1, color=MUTED, lw=1)
+style(ax, "variance / mean of the lift counts c_n(γ) over γ  (Poisson: 1)", "n", "Var / mean")
+ax.legend(loc="lower left"); ax.set_ylim(0.8, 1.2)
+plt.tight_layout()
+print("lambda_n = |L_n|/N at n = 22:", {p: round(len(sl2z_layers_list[21]) / group_order(p), 3) for p in (31, 61, 101, 151)})
+""")
+
+code(r"""
+# the law of the lift counts against Poisson(lambda), and the factorial moments
+rows = []
+for p, n in [(31, 18), (31, 20), (31, 22), (61, 22)]:
+    c = lift_counts(p, n); lam = len(sl2z_layers_list[n - 1]) / group_order(p)
+    row = {"p": p, "n": n, "λ": round(lam, 3)}
+    for k in range(6):
+        row[f"P(c={k}) emp."] = round(float(np.mean(c == k)), 4); row[f"Poisson"] = None
+    rows.append(row)
+    rows.append({"p": p, "n": n, "λ": round(lam, 3), **{f"P(c={k}) emp.": round(math.exp(-lam) * lam**k / math.factorial(k), 4) for k in range(6)}})
+    print(f"p={p} n={n} λ={lam:.3f}:  E[c(c-1)] = {np.mean(c*(c-1)):.3f} vs λ² = {lam**2:.3f};   E[c(c-1)(c-2)] = {np.mean(c*(c-1)*(c-2)):.3f} vs λ³ = {lam**3:.3f}")
+tab = pd.DataFrame(rows).drop(columns=["Poisson"])
+tab.index = [("empirical" if i % 2 == 0 else "Poisson") for i in range(len(tab))]
+tab
+""")
+
+code(r"""
+# operator norms of the sphere operators A_n = sum_{g in L_n(Z)} R(g) on l^2_0(SL_2(F_p)), p = 5, 7
+for p in (5, 7):
+    N = group_order(p); idxs = np.arange(N); a, b, cc, d = decode(idxs, p, _it(p))
+    def rperm(g):
+        g0, g1, g2, g3 = g
+        return encode((a*g0 + b*g2) % p, (a*g1 + b*g3) % p, (cc*g0 + d*g2) % p, (cc*g1 + d*g3) % p, p)
+    norms = []
+    for n in range(1, NM + 1):
+        c = lift_counts(p, n); M = np.zeros((N, N))
+        for gi in np.nonzero(c)[0]:
+            M[idxs, rperm(decode_scalar(int(gi), p))] += c[gi]
+        sv = np.sort(np.linalg.svd(M, compute_uv=False))[::-1]; norms.append(sv[1])
+    rate = math.exp(np.polyfit(range(10, NM + 1), np.log(norms[9:]), 1)[0])
+    print(f"p = {p}: ||A_n||_0 ≈ C·{rate:.3f}^n   (sqrt(phi) = {phi**0.5:.3f}, phi = {phi:.3f});   ||A_n||_0 / sqrt(|L_n|) at n = 10, 16, 22: "
+          + ", ".join(f"{norms[n-1]/math.sqrt(len(sl2z_layers_list[n-1])):.1f}" for n in (10, 16, 22)))
+""")
+
+md(r"""
+Reading these: the variance of the lift counts equals their mean to within 10 % for every $p$ and $n$ computed,
+through and beyond the collision regime, and the whole law of $c_n(\gamma)$ is Poisson to a few percent — so the
+hypotheses of Theorems A.4 and A.5 are true numerically. But the operator norms of the sphere operators grow like
+$\varphi^{0.63 n}$, not $\varphi^{n/2}$: the square-root cancellation that Conjecture A needs holds on the specific
+vector $\delta_I - 1/N$ and not on all of $\ell^2_0$. A proof must therefore work with the counting measures
+themselves (pair and $k$-fold coincidence counts), not with operator norms; `docs/conjecture_A.md` §4 lays out the
+routes (twisted transfer operators of the geodesic automaton à la Bourgain–Kontorovich / Magee–Oh–Winter, which
+would at least give an explicit-constant diameter bound; averaging over $p$ for the variance), and why the limit law
+itself is probably beyond current tools.
 """)
 
 md(r"""
