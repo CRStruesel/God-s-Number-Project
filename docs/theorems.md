@@ -318,7 +318,7 @@ Ramanujan graphs (Theorem 8), with the growth rate of the cover in place of q; t
 
 **Conjecture C (the top tiers are explicit).** In the undirected convention,
 G(p) ≤ 1 + max ℓ over the five families {Tᵏ}, {−Tᵏ}, {Uᵏ}, {diag(x, x⁻¹)}, {TᵏS}, with equality
-G(p) = max for most primes. *Evidence:* true for all 59 primes 5 ≤ p ≤ 283 computed (equality for 45 of them).
+G(p) = max for most primes. *Evidence:* true for all 60 primes 5 ≤ p ≤ 293 computed (equality for 46 of them).
 Each family is a one-parameter continued-fraction problem: ℓ(Tᵏ) is the least cost of a lift
 [[1+pa, k+pb],[pc, 1+pd]], i.e. a local-global question for the thin set (exponent 1/2) of integer matrices of
 bounded continued-fraction cost.
