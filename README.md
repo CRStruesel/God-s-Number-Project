@@ -34,8 +34,13 @@ generated and executed by `notebooks/build_notebook.py`, so its outputs are repr
   (diagonal matrices, Tᵏ·S, powers of U, conjugates of S) but not yet understood.
 * The second eigenvalue of the finite graphs sits at the spectral radius of the infinite Cayley graph of
   SL₂(ℤ) (≈ 3.93): no "exceptional eigenvalues" are visible — a graph analogue of Selberg's conjecture.
-* With Lubotzky–Phillips–Sarnak (Ramanujan) generators instead of S, T (q = 5, 13, 17; p up to ~1000),
+* With Lubotzky–Phillips–Sarnak (Ramanujan) generators instead of S, T (q = 5, p up to 881),
   God's number is ≈ (4/3)·log_q N, matching Sardari's bound; the notebook's §12 explains how modular forms enter.
+* **Random bulk, arithmetic tail** (§13): the parameter-free ball-filling model P(ℓ ≤ n) = 1 − exp(−|Bₙ(ℤ)|/N)
+  reproduces the exact length distribution to a few percent for every prime; beyond log_λ N the tail is geometric
+  with a universal rate — μ ≈ 4.25 ≈ φ³ in the undirected case — which predicts G(p) → (4/3)·log_φ(p³), Sardari's
+  exponent again. God's number is, for every prime computed, the maximum of ℓ over five explicit one-parameter
+  families or that maximum plus one (undirected).
 * The graphs are expanders but, for p ≥ 5, **not** Ramanujan (λ₂ > 2√3), contrary to the proposal's wording.
 
 ## Layout

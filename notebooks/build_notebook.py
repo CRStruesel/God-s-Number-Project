@@ -1170,9 +1170,11 @@ md(r"""
 1. ~~Prove the recurrences of §8.2.~~ **Done** (§8.4, `docs/theorems.md`, Theorem 1): both recurrences, with
    exact generating functions, by amalgam normal forms and a finite Lipschitz check. What remains here is
    cosmetic: a proof of the Lipschitz lemma by hand instead of by enumeration.
-2. **Does $\lim_{p\to\infty} G(p)/\ln p$ exist?** The data of §7 are consistent with a limit but cannot establish
-   one; even $\limsup$ vs $\liminf$ along subsequences of primes is unknown. Related: is $G(p) - n_{\mathrm{growth}}(p)$
-   bounded by a constant times $\ln p$ with a small constant, or by something smaller (e.g. $\ln\ln p$)?
+2. **Does $\lim_{p\to\infty} G(p)/\ln p$ exist, and what is it?** §13 turns this into a sharp conjecture: the tail of
+   the length distribution decays like $\varphi^{-3t}$ beyond $\log_\varphi N + t$, hence
+   $G_{\mathrm{undir}}(p) = (\tfrac43 + o(1))\log_\varphi(p^3) = (4/\ln\varphi)\ln p \approx 8.31 \ln p$ — Sardari's
+   exponent for Ramanujan graphs, reappearing for $S, T$. Two theorems to aim for: the Poisson law for the bulk
+   (equidistribution of word balls of $\mathrm{SL}_2(\mathbb{Z})$ in $\mathrm{SL}_2(\mathbb{F}_p)$), and the exponent of the tail.
 3. **Describe the set of farthest elements.** §10.1 shows that $\pm T^k$ attains the maximum for most primes
    but not all, and that the other maximisers fall into a few one-parameter families (diagonal, $\pm T^k S$,
    $\pm U^k$, …) plus a residue rich in trace-zero elements. Is $G(p)$ always the maximum of $\ell$ over a fixed
@@ -1322,6 +1324,124 @@ farthest, seconds`; the spectrum file is a CSV with a header.
 """)
 
 md(r"""
+## 13. Random bulk, arithmetic tail — what the "distance tiers" are
+
+Is it meaningful to ask for a *classification* of the elements in each tier $L_n(p) = \{\gamma : \ell(\gamma) = n\}$?
+Below the injectivity radius the answer is given by Theorem 1: $L_n(p)$ is the image of $L_n(\mathbb{Z})$, whose
+elements are exactly the normal forms of cost $n$. Beyond it, the right first question is whether the tiers have
+*any* structure, and the cleanest null hypothesis is the **ball-filling (Poisson) model**: pretend that reduction mod
+$p$ sends the ball $B_n(\mathbb{Z})$ to $G$ "at random", so that an element is still unreached after $n$ steps with
+probability $\exp(-|B_n(\mathbb{Z})|/N)$. The model has no free parameter, because $|B_n(\mathbb{Z})|$ is known
+exactly. It predicts the whole distribution of $\ell$:
+""")
+
+code(r"""
+lamv = {"directed": psi, "undirected": phi}
+BZ = {c: np.cumsum(np.array(layers_extended(140, c), dtype=object)).astype(float) for c in lamv}
+rows = []
+for conv in ["directed", "undirected"]:
+    for p in [101, 211, 499, 1009]:
+        L = np.array(DATA[conv][p]["layer_sizes"], float); N = L.sum()
+        model = 1 - np.exp(-BZ[conv][:len(L)] / N)
+        unc = N * np.exp(-BZ[conv] / N)
+        rows.append({"conv": conv, "p": p, "G": len(L) - 1, "Poisson G": int(np.argmax(unc < 0.5)),
+                     "mean ℓ": round(float((np.arange(len(L)) * L).sum() / N), 2),
+                     "Poisson mean": round(float(np.sum(np.exp(-BZ[conv] / N))), 2),
+                     "sup |actual − model| of P(ℓ ≤ n)": round(float(np.max(np.abs(np.cumsum(L) / N - model))), 4),
+                     "G / log_λ N": round((len(L) - 1) / (math.log(N) / math.log(lamv[conv])), 3)})
+pd.DataFrame(rows).set_index(["conv", "p"])
+""")
+
+md(r"""
+The bulk of every tier profile is reproduced to within a few percent, and the mean to within a tenth of a step, by a
+model with nothing to fit. In other words, **the bulk tiers are random**: being in tier $n$ means being hit, for the
+first time, by the projection of the $n$-th ball of $\mathrm{SL}_2(\mathbb{Z})$, and the projection behaves like a random
+map. (Proving this — equidistribution of word balls of the cover in the quotient, in the range $|B_n| \le N^{1-\delta}$ —
+is a concrete theorem to aim for; the tools are the spectral gap and the automatic structure of §8.4.)
+
+The model fails exactly where the arithmetic begins. Plotting, for every prime, the fraction of elements with
+$\ell > n$ against $n - \log_\lambda N$ ($\lambda = \varphi$ or $\psi$) collapses all primes onto the Poisson curve in the
+bulk and onto a common **straight line** in the tail — the tail is geometric, not doubly exponential:
+""")
+
+code(r"""
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.4))
+tail_fit = {}
+for ax, conv in zip(axes, ["directed", "undirected"]):
+    ps = sorted(p for p in DATA[conv] if p >= 100)
+    ramp3 = [SEQ[i] for i in np.linspace(0, len(SEQ) - 1, len(ps)).round().astype(int)]
+    xs, ys = [], []
+    for p, col in zip(ps, ramp3):
+        L = np.array(DATA[conv][p]["layer_sizes"], float); N = L.sum(); unr = N - np.cumsum(L)
+        logN = math.log(N) / math.log(lamv[conv]); n = np.arange(len(L)); m = unr > 0
+        ax.plot(n[m] - logN, np.log10(unr[m] / N), ".", color=col, ms=3)
+        mm = (unr / N < 1e-3) & (unr / N > 1e-7) & (unr > 20)
+        if p >= 150: xs += list(n[mm] - logN); ys += list(np.log(unr[mm] / N))
+    c0 = BZ[conv][100] / lamv[conv] ** 100
+    x = np.linspace(-14, 10, 400)
+    ax.plot(x, np.log10(np.exp(-c0 * lamv[conv] ** x)), color=PAL["undirected"], label="Poisson model exp(−|B_n(ℤ)|/N)", **LINE)
+    s, i = np.polyfit(xs, ys, 1); mu = math.exp(-s); tail_fit[conv] = mu
+    ax.plot(x, (i + s * x) / math.log(10), "--", color=INK2, lw=1, label=f"fitted tail  C·μ^−(n − log_λ N),  μ = {mu:.2f}")
+    style(ax, f"{conv}: all primes 100..1009 collapsed (light → dark)", "n − log_λ N", "log₁₀ P(ℓ > n)")
+    ax.set_ylim(-9.5, 0.3); ax.set_xlim(-16, 10); ax.legend(loc="lower left")
+plt.tight_layout()
+for conv in ["directed", "undirected"]:
+    mu = tail_fit[conv]; lam = lamv[conv]
+    print(f"{conv:10s}: tail rate μ = {mu:.3f};  log_λ μ = {math.log(mu)/math.log(lam):.3f};  λ³ = {lam**3:.3f};"
+          f"  implied asymptotic G / log_λ N = 1 + 1/log_λ μ = {1 + math.log(lam)/math.log(mu):.3f}")
+""")
+
+md(r"""
+In the undirected case the fitted tail rate is $\mu \approx 4.25$ while $\varphi^3 = 4.236$. If the tail is really
+$P(\ell > \log_\varphi N + t) \asymp \varphi^{-3t}$, then the last element disappears when $\varphi^{3t} \asymp N$, i.e. at
+$t = \tfrac13 \log_\varphi N$, and therefore
+
+$$ G(p) \;=\; \big(\tfrac43 + o(1)\big)\,\log_\varphi (p^3) \qquad\text{(conjecturally, undirected)}. $$
+
+This is the **same exponent $\tfrac43$ that Sardari proved for the LPS Ramanujan graphs** (§12), with the growth
+rate $\varphi$ of the cover in place of $q$. The finite-size ratios in the table above ($1.08$–$1.18$) are still far from
+$\tfrac43$, as they are for the LPS graphs at these sizes, so this is a conjecture supported by the tail slope, not by the
+ratios. In the directed case the measured rate gives an implied constant $\approx 1.22$ with no obviously clean value.
+Both slopes carry an uncertainty of roughly $\pm 0.2$ in $\mu$ (scatter between primes).
+
+**Which elements are in the tail?** `scripts/family_maxima.py` compares $G(p)$ with the maximum of $\ell$ over five
+explicit one-parameter families — $T^k$, $-T^k$, $U^k$, $\mathrm{diag}(x, x^{-1})$, $T^k S$:
+""")
+
+code(r"""
+fm_path = ROOT / "data" / "family_maxima.json"
+if fm_path.exists():
+    fm = pd.DataFrame(json.load(open(fm_path)))
+    for conv in ["directed", "undirected"]:
+        rows = fm[fm["conv"] == conv]
+        gap = rows["G"] - rows["max_over_families"]
+        gapT = rows["G"] - rows[["max T^k", "max -T^k"]].max(axis=1)
+        print(f"{conv:10s} ({len(rows)} primes up to {rows['p'].max()}):")
+        print(f"   G − max over the five families: {dict(zip(*map(list, np.unique(gap, return_counts=True))))}")
+        print(f"   G − max_k ℓ(±T^k):               {dict(zip(*map(list, np.unique(gapT, return_counts=True))))}")
+        print(f"   whole last layer inside the union of the families: {int((rows['farthest_in_union_of_families'] == rows['n_far']).sum())}/{len(rows)} primes")
+    fm.set_index(["p", "conv"]).loc[[(p, c) for p in (101, 151, 211, 257, 283) for c in ("directed", "undirected")],
+                                   ["G", "n_far", "max T^k", "max -T^k", "max U^k", "max diag", "max T^k S", "farthest_in_union_of_families"]]
+else:
+    print("run scripts/family_maxima.py to produce data/family_maxima.json")
+""")
+
+md(r"""
+So in the undirected convention God's number is the maximum of $\ell$ over five explicit one-parameter families, or
+exceeds it by exactly one, for every prime computed — a statement precise enough to conjecture and to attack:
+each family is a continued-fraction problem (which lifts $\equiv T^k$ have short expansions?), and the question
+"which elements are far" becomes "which residue classes avoid the thin set of matrices with small
+continued-fraction cost". That is a local-global problem for a thin set of exponent $\tfrac12$ (the word ball of
+radius $n$ has $\asymp \varphi^n$ elements of height up to $\varphi^n$, out of $\asymp \varphi^{2n}$ integer matrices of that
+height), in the family of problems studied by Bourgain–Kontorovich (Zaremba) and Magee–Oh–Winter.
+
+**Verdict on "classifying the tiers".** As stated, it is not a good problem: below the injectivity radius it is solved
+(Theorem 1), and in the bulk there is nothing to classify (Poisson). It becomes a good problem once it is restricted to
+the **excess tail** — the $N\cdot\mu^{-t}$ elements beyond $\log_\lambda N + t$ that the random model cannot account for —
+where the data show both a universal law (the exponent) and explicit structure (the families).
+""")
+
+md(r"""
 ## Summary in numbers
 
 Every figure below is computed from the data loaded above, so this list is a faithful digest of the notebook.
@@ -1343,6 +1463,9 @@ print(f"Share of G(p) explained by the SL_2(Z)-growth bound at p = {primes[-1]}:
       f"{table.loc[primes[-1], 'growth_lb_dir'] / G('directed', primes[-1]):.0%} (dir), "
       f"{table.loc[primes[-1], 'growth_lb_und'] / G('undirected', primes[-1]):.0%} (und)")
 print(f"Theorem (§8.4): sum |L_n| x^n = {und_gf} (undirected), {dir_gf} (directed)")
+print(f"Ball-filling model (§13): sup-norm error of P(ℓ ≤ n) at p = 1009: "
+      f"{max(r['sup |actual − model| of P(ℓ ≤ n)'] for r in rows if r['p'] == 1009):.3f}; "
+      f"tail rate μ = {tail_fit['undirected']:.2f} (undirected; φ³ = {phi**3:.2f}), {tail_fit['directed']:.2f} (directed)")
 print()
 sd_dir = stats.xs("directed", level="conv")["sd"]; sd_und = stats.xs("undirected", level="conv")["sd"]
 print(f"Spread of the length distribution for p >= 61: sd ≈ {sd_dir[sd_dir.index >= 61].mean():.2f} (dir), {sd_und[sd_und.index >= 61].mean():.2f} (und)")

@@ -287,5 +287,41 @@ Ramanujan–Petersson bound for weight-2 cusp forms via Jacquet–Langlands). Co
 diam X^{p,q} ≤ 2 log_q N + 2 log_q 2 + 1 with N = |PSL₂(𝔽_p)| (LPS), and Sardari (Combinatorica 2019)
 proved diam X^{p,q} ≥ (4/3) log_q N − O(1); Sarnak conjectures 4/3 is sharp.
 
-Computed values (`scripts/compute_lps.py`, `data/lps_q*.jsonl`): for q = 5 and p ≤ 1009 the ratio
-diam/log₅N stays within about [1.25, 1.5]; see the notebook, §12, for the table and for q = 13, 17.
+Computed values (`scripts/compute_lps.py`, `data/lps_q*.jsonl`): for q = 5 and p ≤ 881 the ratio
+diam/log₅N stays within about [1.24, 1.51]; see the notebook, §12.
+
+---
+
+## Conjectures (with the evidence; notebook §13)
+
+Let N = p³ − p and λ = φ (undirected) or ψ (directed), and let c_λ = lim |Bₙ(ℤ)|/λⁿ (explicit from Theorem 1).
+
+**Conjecture A (random bulk).** For γ uniform in SL₂(𝔽_p),
+P(ℓ(γ) ≤ n) = 1 − exp(−|Bₙ(ℤ)|/N) + o(1) uniformly in n, as p → ∞. Equivalently: ℓ(γ) − log_λ(N/c_λ) converges in
+distribution to the law with distribution function 1 − exp(−λ^{t}) sampled at integers (a discretised Gumbel-type law).
+*Evidence:* with no fitted parameter the formula matches the exact distribution to within 0.014–0.033 in sup norm
+for every p ≥ 100 up to 1009, and the mean to within 0.1. *Route to a proof:* equidistribution of the word balls of
+SL₂(ℤ) in SL₂(𝔽_p) in the range |Bₙ| ≤ N^{1−δ}, via the spectral gap (Selberg/Bourgain–Gamburd) applied to the
+sphere-averaging operators, which are controlled by the automatic structure of §1.
+
+**Conjecture B (geometric tail and the constant 4/3).** There is a universal μ > 1 with
+P(ℓ(γ) > log_λ N + t) ≍ μ^{−t} for t in the range where the Poisson prediction is already negligible; in the
+undirected case μ = φ³, and consequently
+
+    G_undir(p) = (4/3 + o(1)) · log_φ(p³) = (4/ln φ + o(1)) · ln p ≈ 8.31 ln p.
+
+*Evidence:* on the collapsed plot (fraction with ℓ > n against n − log_λ N) all primes 100 ≤ p ≤ 1009 fall on one
+straight line in the tail; the fitted rate over 66 primes is μ = 4.25 ± 0.2 (undirected; φ³ = 4.236) and
+μ = 5.5 ± 0.2 (directed, implied constant 1 + 1/log_ψ μ ≈ 1.22). The constant 4/3 is Sardari's for the LPS
+Ramanujan graphs (Theorem 8), with the growth rate of the cover in place of q; the finite-size ratios G/log_λ N
+(1.08–1.18 at these p) are, as for the LPS graphs, still far from the limit.
+
+**Conjecture C (the top tiers are explicit).** In the undirected convention,
+G(p) ≤ 1 + max ℓ over the five families {Tᵏ}, {−Tᵏ}, {Uᵏ}, {diag(x, x⁻¹)}, {TᵏS}, with equality
+G(p) = max for most primes. *Evidence:* true for all 59 primes 5 ≤ p ≤ 283 computed (equality for 45 of them).
+Each family is a one-parameter continued-fraction problem: ℓ(Tᵏ) is the least cost of a lift
+[[1+pa, k+pb],[pc, 1+pd]], i.e. a local-global question for the thin set (exponent 1/2) of integer matrices of
+bounded continued-fraction cost.
+
+What is *not* a good problem: classifying the elements of a bulk tier. Below the injectivity radius the tiers are
+the normal forms of Theorem 1; in the bulk they are random (Conjecture A). The content is in the tail.
